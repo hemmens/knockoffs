@@ -1,0 +1,50 @@
+import numpy as np
+from scipy import stats, optimize
+import datetime as dt
+
+# Number of observations
+sz = 2000
+
+# A selection of different distributions, sampled separately to ensure the marginals are well-defined
+rng = np.random.default_rng(24)
+ds = [rng.normal(size=sz),
+      rng.standard_t(4,size=sz),
+      rng.standard_cauchy(size=sz),
+      rng.standard_exponential(size=sz)] 
+      
+# In this next section, we perform a dirty method for creating some form of non-zero covariance without disturbing the marginal distributions
+D = len(ds)
+ds = [list(x) for x in ds]
+for i in range(D) :
+  ds[i].sort()
+  
+# Randomly create some guide for the correlation matrix
+rng = np.random.default_rng(1)
+corr_vec = rng.uniform(-1,1,D-1)
+print(corr_vec)
+
+# Reconstruct the variables to generate some non-zero covariance
+dists = [ds[0]]
+for i in range(1,D) :
+  print(i)
+  new_dist = []
+  old_dist = ds[i]
+  rho = corr_vec[i-1]
+  
+  for j in range(sz) :
+    k = len(old_dist)
+    if rho > 0 :
+      weights = [stats.norm.pdf(rho*(x-j*k/sz)) for x in range(k)]
+    else :
+      weights = [stats.norm.pdf(rho*(k-x-j*k/sz)) for x in range(k)]
+    weights /= sum(weights)
+    select = rng.choice(old_dist, p=weights)
+    new_dist += [select]
+    old_dist.remove(select)
+    
+  dists += [new_dist]
+  
+# Export the correlated variables
+import pickle as pkl
+with open('test_dists.pkl', 'wb') as fp :
+  pkl.dump(dists, fp)
