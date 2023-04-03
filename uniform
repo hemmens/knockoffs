@@ -1,0 +1,157 @@
+import pickle as pkl
+with open('test_dists.pkl', 'rb') as fp :
+  dists = pkl.load(fp)
+  
+import numpy as np
+from scipy import stats, optimize
+import datetime as dt
+
+# Convert distributions to uniform(0,1)
+u = [stats.norm.cdf(dists[0]),
+    stats.t.cdf(dists[1],4),
+    stats.cauchy.cdf(dists[2]),
+    stats.expon.cdf(dists[3])]
+
+D = len(u)
+
+# Check new variables are uniform
+for kk in range(D) :
+  print(stats.kstest(u[kk], 'uniform').pvalue)
+  
+# Check correlation matrix
+print(np.corrcoef(u))
+
+# Precompute unncentralized moments
+moments = {}
+for m in range(2,5) :
+    for k in range(1,m) :
+        moments[(k,m-k)] = {}
+        for i in range(D-1) :
+            for j in range(i+1,D) :
+                moments[(k,m-k)][(i,j)] = pprod(u[i],k,u[j],m-k)
+                
+# Find single knockoff (of first feature)
+
+# Define target objective 
+def fun(v) :
+    targets = [pprod(v,1,u[0],1) - 1/4, # No covariance
+               pprod(v,2,u[0],1) - 1/6, # No coskewness
+               pprod(v,1,u[0],2) - 1/6,
+               pprod(v,3,u[0],1) - 1/8, # No cokurtosis
+               pprod(v,2,u[0],2) - 5/48,
+               pprod(v,1,u[0],3) - 1/8]
+        
+    targets = [x**2 for x in targets]
+    
+    return np.sum(targets)
+    
+# Define constraints
+cons = [{'type': 'ineq', 'fun': lambda v: np.mean(v) - 0.49},
+       {'type': 'ineq', 'fun': lambda v: - np.mean(v) + 0.51}, # Knockoff mean is 1/2
+       {'type': 'ineq', 'fun': lambda v: np.var(v) - 0.08},
+       {'type': 'ineq', 'fun': lambda v: - np.var(v) + 0.0867}, # Knockoff variance is 1/12
+       {'type': 'ineq', 'fun': lambda v: stats.kstest(v, 'uniform').pvalue - 0.05}] # Knockoff distribution is uniform
+
+# Define constraints that knockoff uncentralized comoments with other features are same as original
+for d in range (1,4) :
+    for m in range(2,3) :
+        for k in range(1,m) :
+            cons += [{'type': 'ineq', 'fun': lambda v, d=d, m=m, k=k: pprod(v,k,u[d],m-k) - moments[(k,m-k)][(0,d)] + 0.001},
+                       {'type': 'ineq', 'fun': lambda v, d=d, m=m, k=k: - pprod(v,k,u[d],m-k) + moments[(k,m-k)][(0,d)] + 0.001}]
+                       
+# Perform optimization
+print(dt.datetime.now())
+
+res = optimize.minimize(fun, rng.uniform(size=sz),
+                        method='SLSQP',
+                        bounds=[(0,1) for _ in range(sz)],
+                        constraints=cons,
+                        tol=0.01,
+                        options={'maxiter': 5})
+
+print(dt.datetime.now())
+
+# Check knockoff satisfies distribution constraints
+print(stats.kstest(res.x, 'uniform')
+print(np.mean(res.x))
+print(np.var(res.x))
+
+# Check knockoff is uncorrelated with original
+for m in range(2,5) :
+    for k in range(1,m) :
+        print(f'{m}\t{k}\t{pprod(res.x,k,u[0],m-k)}')
+        
+# Check other decentralized moment constraints are satisfied
+for dd in range(1,4) :
+    for m in range(2,5) :
+        for k in range(1,m) :
+            print(f'{dd}\t{m}\t{k}\t{pprod(res.x,k,u[dd],m-k)}\t{moments[(k,m-k)][(0,dd)]}')
+            
+print(np.round(np.corrcoef([res.x]+u),3))
+
+
+
+# Finding all 4 variables at once
+
+def fun2(v,d) :
+    sz = len(v)//d
+    targets = [pprod(v[n*sz:(n+1)*sz], 1, u[k], 1) - 1/4 for n in range(d)] \
+                + [pprod(v[n*sz:(n+1)*sz], 2, u[k], 1) - 1/6 for n in range(d)] \
+                + [pprod(v[n*sz:(n+1)*sz], 1, u[k], 2) - 1/6 for n in range(d)] \
+                + [pprod(v[n*sz:(n+1)*sz], 3, u[k], 1) - 1/8 for n in range(d)] \
+                + [pprod(v[n*sz:(n+1)*sz], 2, u[k], 2) - 5/48 for n in range(d)] \
+                + [pprod(v[n*sz:(n+1)*sz], 1, u[k], 3) - 1/8 for n in range(d)]
+        
+    targets = [x**2 for x in targets]
+    
+    return np.sum(targets)
+    
+cons = [{'type': 'ineq', 'fun': lambda v, n=n, sz=sz: np.mean(v[n*sz:(n+1)*sz]) - 0.49} for n in range(D)] \
+        + [{'type': 'ineq', 'fun': lambda v, n=n, sz=sz: - np.mean(v[n*sz:(n+1)*sz]) + 0.51} for n in range(D)] \
+        + [{'type': 'ineq', 'fun': lambda v, n=n, sz=sz: np.var(v[n*sz:(n+1)*sz]) - 0.08} for n in range(D)] \
+        + [{'type': 'ineq', 'fun': lambda v, n=n, sz=sz: - np.var(v[n*sz:(n+1)*sz]) + 0.0867} for n in range(D)] \
+        + [{'type': 'ineq', 'fun': lambda v, n=n, sz=sz: stats.kstest(v[n*sz:(n+1)*sz], 'uniform').pvalue - 0.05} for n in range(D)]
+
+for n in range(D) :
+    for d in range(D) :
+        if n != d :
+            for m in range(2,3) :
+                for k in range(1,m) :
+                    if n < d :
+                        cons += [{'type': 'ineq', 'fun': lambda v, n=n, d=d, m=m, k=k, sz=sz: \
+                            pprod(v[n*sz:(n+1)*sz],k,u[d],m-k) - moments[(k,m-k)][(n,d)] + 0.001},
+                                    {'type': 'ineq', 'fun': lambda v, n=n, d=d, m=m, k=k, sz=sz: \
+                            - pprod(v[n*sz:(n+1)*sz],k,u[d],m-k) + moments[(k,m-k)][(n,d)] + 0.001}]
+                        
+                        cons += [{'type': 'ineq', 'fun': lambda v, n=n, d=d, m=m, k=k, sz=sz: \
+                            pprod(v[n*sz:(n+1)*sz],k,v[d*sz:(d+1)*sz],m-k) - moments[(k,m-k)][(n,d)] + 0.001},
+                                    {'type': 'ineq', 'fun': lambda v, n=n, d=d, m=m, k=k, sz=sz: \
+                            - pprod(v[n*sz:(n+1)*sz],k,v[d*sz:(d+1)*sz],m-k) + moments[(k,m-k)][(n,d)] + 0.001}]
+                    elif d < n :
+                        cons += [{'type': 'ineq', 'fun': lambda v, n=n, d=d, m=m, k=k, sz=sz: \
+                            pprod(v[n*sz:(n+1)*sz],k,u[d],m-k) - moments[(m-k,k)][(d,n)] + 0.001},
+                                    {'type': 'ineq', 'fun': lambda v, n=n, d=d, m=m, k=k, sz=sz: \
+                            - pprod(v[n*sz:(n+1)*sz],k,u[d],m-k) + moments[(m-k,k)][(d,n)] + 0.001}]
+                            
+print(dt.datetime.now())
+
+res = optimize.minimize(fun2, rng.uniform(size=D*sz), args=(D,),
+                        method='SLSQP',
+                        bounds=[(0,1) for _ in range(D*sz)],
+                        constraints=cons,
+                        tol=0.01,
+                        options={'maxiter': 5})
+
+print(dt.datetime.now())
+
+
+for d in range(D) :
+  print(stats.kstest(res.x[d*sz:(d+1)*sz], 'uniform')
+  print(np.mean(res.x[d*sz:(d+1)*sz]))
+  print(np.var(res.x[d*sz:(d+1)*sz]))
+
+  for m in range(2,5) :
+      for k in range(1,m) :
+          print(f'{m}\t{k}\t{pprod(res.x[d*sz:(d+1)*sz],k,u[d],m-k)}')
+            
+print(np.round(np.corrcoef([res.x[d*sz:(d+1)*sz] for d in range(D)]+u),3))
