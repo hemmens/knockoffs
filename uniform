@@ -79,7 +79,7 @@ res = optimize.minimize(fun, rng.uniform(size=sz),
 print(dt.datetime.now())
 
 # Check knockoff satisfies distribution constraints
-print(stats.kstest(res.x, 'uniform')
+print(stats.kstest(res.x, 'uniform'))
 print(np.mean(res.x))
 print(np.var(res.x))
 
