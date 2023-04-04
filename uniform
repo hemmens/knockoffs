@@ -6,6 +6,13 @@ import numpy as np
 from scipy import stats, optimize
 import datetime as dt
 
+def pprod(u1,x1,u2,x2) :
+    u1 = np.power(u1,x1)
+    u2 = np.power(u2,x2)
+    product = np.dot(u1,u2)
+    
+    return product/len(u1)
+
 # Convert distributions to uniform(0,1)
 u = [stats.norm.cdf(dists[0]),
     stats.t.cdf(dists[1],4),
