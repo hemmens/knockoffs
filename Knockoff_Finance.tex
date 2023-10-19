@@ -1,0 +1,217 @@
+\documentclass[review]{elsarticle}
+
+\usepackage{lineno,hyperref}
+\usepackage{amsmath}
+\usepackage{txfonts}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\modulolinenumbers[5]
+
+\journal{Journal of \LaTeX\ Templates}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Elsevier bibliography styles
+%%%%%%%%%%%%%%%%%%%%%%%
+%% To change the style, put a % in front of the second line of the current style and
+%% remove the % from the second line of the style you would like to use.
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Numbered
+%\bibliographystyle{model1-num-names}
+
+%% Numbered without titles
+%\bibliographystyle{model1a-num-names}
+
+%% Harvard
+%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
+
+%% Vancouver numbered
+%\usepackage{numcompress}\bibliographystyle{model3-num-names}
+
+%% Vancouver name/year
+%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
+
+%% APA style
+%\bibliographystyle{model5-names}\biboptions{authoryear}
+
+%% AMA style
+%\usepackage{numcompress}\bibliographystyle{model6-num-names}
+
+%% `Elsevier LaTeX' style
+\bibliographystyle{model1-num-names}\biboptions{authoryear}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Applying knockoff methodology to stock index replicating portfolios\tnoteref{mytitlenote}}
+%\tnotetext[mytitlenote]{Fully documented templates are available in the elsarticle package on \href{http://www.ctan.org/tex-archive/macros/latex/contrib/elsarticle}{CTAN}.}
+
+%% Group authors per affiliation:
+\author{Christopher Hemmens\fnref{myfootnote}}
+\address{HEIG-VD, Rue de Galilée 15, 1400 Yverdon-les-Bains, Switzerland}
+%\fntext[myfootnote]{Since 1880.}
+
+%% or include affiliations in footnotes:
+%\author[mymainaddress,mysecondaryaddress]{Elsevier Inc}
+%\ead[url]{www.elsevier.com}
+
+%\author[mysecondaryaddress]{Global Customer Service\corref{mycorrespondingauthor}}
+%\cortext[mycorrespondingauthor]{Corresponding author}
+%\ead{support@elsevier.com}
+
+%\address[mymainaddress]{1600 John F Kennedy Boulevard, Philadelphia}
+%\address[mysecondaryaddress]{360 Park Avenue South, New York}
+
+\begin{abstract}
+This template helps you to create a properly formatted \LaTeX\ manuscript.
+\end{abstract}
+
+\begin{keyword}
+Model-X Knockoffs\sep Variational Autoencoder\sep Index-replicating Portfolio
+\end{keyword}
+
+\end{frontmatter}
+
+%\linenumbers
+
+\section{Introduction}
+
+Ever since its introduction into the literature by \citet{candes2018panning}, Model-X Knockoffs have received a lot of attention. In essence, it is a way of controlling the False Discovery Rate (FDR) by creating statistical doppelgangers of the input features of a machine learning model. By including the original features as well as their knockoffs, one gets a useful tool for identifying features that are being chosen through statistical noise rather than through any real predictive power.
+
+Definition 3.1 of \citet{candes2018panning} states that the Model-X knockoffs for the family of random variables $X=(X_1,\dots,X_p)$ are a new family of random variables $\tilde{X}=(\tilde{X}_1,\dots,\tilde{X}_p)$ constructed with the following two properties:
+\begin{enumerate}
+\item for any subset $S\subset\{1,\dots,p\}$, $(X,\tilde{X})_{\text{swap}(S)}\stackrel{d}{=}(X,\tilde{X})$;
+\item $\tilde{X}\Perp Y$ $|$ $X$ if there is a response $Y$.
+\end{enumerate}
+
+In the above definition, $(X,\tilde{X})_{\text{swap}(S)}$ is obtained from $(X,\tilde{X})$ by swapping the entries $X_j$ and $\tilde{X}_j$ for each $j\in S$; for example, with $p=3$ and $S=\{2,3\}$,
+
+$$(X_1,X_2,X_3,\tilde{X}_1,\tilde{X}_2,\tilde{X}_3)_{\text{swap}(\{2,3\})}\stackrel{d}{=}(X_1,\tilde{X}_2,\tilde{X}_3,\tilde{X}_1,X_2,X_3).$$
+
+The authors set out the case for Model-X knockoffs and then provide analytical methods for finding them in the case where $(X_1,\dots,X_p)$ is described by a multivariate normal distribution. The literature has since expanded to find ways to construct knockoffs for input sets that fall outside this admittedly narrow area.
+
+For example, \citet{romano2020deep} uses deep generative models to build a machine for sampling approximate model-X knockoffs for arbitrary and unspecified data distributions. \citet{bates2021metropolized} find that applying the Metropolis-Hastings (MH) algorithm (\citet{metropolis1953equation}, \citet{hastings1970monte}) can produce valid knockoffs, in part due to the time-reversibility of the Monte Carlo Markov Chain method that adapts so well to the core feature of reversibility of the knockoff framework. And \citet{ren2021derandomizing} build on these by introducing a derandomizing step into the selection algorithm such that the knockoffs that are generated are more consistent without compromising statistical power.
+
+An interesting question that follows from this is whether copulas are a good way of modelling the multivariate probability distribution such that knockoffs are easier to create. A copula, $C:[0,1]^d \rightarrow[0,1]$, describes a joint cumulative distribution function of a d-dimensional random vector on the unit cube $[0,1]^d$ with uniform marginals. (\citet{nelsen2007copula})
+
+Sklar's Theorem (\citet{sklar1959fonctions}) tells us that any multivariate joint distribution can be represented using a copula. For example, if $H$ is a cumulative distribution function such that
+
+$$H(x_1,\dots,x_d)=Pr(X_1\le x_1,\dots,X_d\le x_d),$$
+
+then there exists a copula $C$ such that
+
+$$H(x_1,\dots,x_d)=C(F_1(x_1),\dots,F_d(x_d))$$
+
+where $F_i(x_i)$ is the marginal cumulative distribution function of random variable $X_i$.
+
+Papers that have looked at using copulas to construct knockoffs include \citet{aas2009pair} and \citet{vasquez2023controlling}.
+
+\citet{berti2023new} provide some insight into how copulas can be used to generate knockoffs. If we model our $d$-dimensional cumulative distribution function as a copula,
+
+$$C(F_1(x_1),\dots,F_d(x_d)),$$
+
+then we can replace $F_i(x_i)$ with a 2-copula: $G_i(F_i(x_i),F_i(\tilde{x}_i))$. Here, where $\tilde{x}_i$ represents the knockoff value of $x_i$, you can see that $G_i$ still represents a uniform marginal distribution in the copula, $C$. Since this applies for any 2-copula, and since we want $X_i$ and $\tilde{X}_i$ to be independent, we can choose $G_i$ to be the independence 2-copula: $G_i(u,v)=u\cdot v$.
+
+However, this only generates a valid joint distribution function if the following conditions are satisfied:
+
+In the final part of this introduction, we look at a research field where copulas are frequently used: finance (\citet{embrechts2001modelling}). In the realm of finance, neural networks are often used in the pursuit of index-replicating stock portfolios. The specific technology used is the variational autoencoder, for example, in \citet{heaton2017deep}, in \citet{kim2020index}, and in \citet{zhang2020stock}.
+
+Our goal is to see if this framework can be applied to a branch of research using variational autoencoders 
+
+\section{Data}
+
+In order to test whether Model-X knockoffs can effectively be applied to Index-Tracking Auto-Encoders, we build an Auto-Encoder using data from the Swiss Market Index (SMI), which is a weighted combination of 20 stocks. This is a lot fewer than other indices that have been studied in the literature, for example, \citet{zhang2020stock} use the CSI 300 index with 300 stocks, but this is because we want a simple framework with which to better study the effect of including Model-X Knockoffs in the model.
+
+\subsection{Auto-Encoder}
+
+To start with, we use daily returns data from 29th May 2017 to 8th April 2019 as there were no index constituent changes during this period, no major market shocks, and all but one of the constituents' data is freely available through Yahoo! Finance. For the remaining stock, Credit Suisse, we obtained price data through MacroTrends.
+
+We train an auto-encoding neural network whose input is the 20 daily returns of the SMI constituents, has a hidden layer of 2 nodes, and the target output is the same as the input layer. The daily returns are normalised so that they have a mean of 0 and variance of 1. Formally, if the daily return of stock $i$ on day $t$ is $r_{i,t}$, then the $i$th input into the auto-encoder for observation $t$ is
+
+$$x_{i,t} = \frac{r_{i,t} - \bar{r}_i}{\sigma_i}$$
+
+where $\bar{r}_i$ and $\sigma_i$ are the mean and standard deviation of the daily returns of stock $i$ respectively. This dataset gives us 481 observations.
+
+To construct the model, we use the MLPRegressor package through SciKit-Learn using the $\textit{identity}$ activation function and $\textit{lbfgs}$ solver. These were chosen as a result of hyperparameter tuning. Models were scored using the default $R^2$ measure, for which the model whose hidden layer has 2 nodes scored $\sim$$54\%$. For comparison, the model whose hidden layer has 3 nodes scored $\sim$$60\%$.
+
+Using this model, we calculate the amount of communal information each SMI constituent has by taking the 2-norm of the difference of the input and output values of each stock. Formally, the information loss for each stock is calculated as
+
+$$\mathcal{L}_i = \sum_{t=1}^{481} \left\| x_{i,t} - x_{i,t}' \right\|_2$$
+
+and the lower this value is, the more communal information the stock holds. The top 5 and bottom 5 stocks with their measures are
+
+$$\begin{tabular}{l l}
+\text{ZURN}& 0.129 \\
+\text{SLHN}& 0.136 \\
+\text{NESN}& 0.141 \\
+\text{NOVN}& 0.145 \\
+\text{UBSG}& 0.152 \\
+\dots & \dots \\
+\text{GEBN}& 0.195 \\
+\text{CSGN}& 0.199 \\
+\text{UHR}& 0.218 \\
+\text{SIKA}& 0.221 \\
+\text{LONN}& 0.228 \\
+\end{tabular}$$
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+  \includegraphics[width=\linewidth]{ZURN_AE.png}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+  \includegraphics[width=\linewidth]{LONN_AE.png}
+  \end{subfigure}
+  \caption{Comparison of ZURN (left) and LONN (right) stocks with their auto-encoded versions}
+  \label{fig:zurn_lonn_ae}
+\end{figure}
+
+With these values, if we were to construct an index-tracking portfolio, we would choose the one or two stocks with the most communal information, i.e. ZURN and/or SLHN, as well as some of the stocks with the least communal information, i.e. LONN, SIKA, etc.
+
+\subsection{Copula}
+
+Next, we fit the daily returns data to a Gaussian Multivariate copula. By doing this, each stock's returns can be modelled using their own non-normal univariate distribution, and we can still use the \citet{candes2018panning} methodology for generating knockoffs from a normal multivariate distribution. We force the copula to fit the returns to parametric univariate distributions and, as a result, all but one are fit to a Student-t distribution. The remaining stock, ROG, is fit to a LogLaplace distribution.
+
+The difficulty with generating knockoffs from a normal multivariate distribution is the choice of $diag(\textbf{s})$. Ideally, we want the diagonal of $\Sigma - diag(\textbf{s})$, where $\Sigma$ is the covarince matrix of the stocks' weekly returns, to be as close to $0$ as possible. However, this is likely to make the distribution for sampling the knockoffs not a valid distribution, and so the goal is to get it as close to $0$ as possible whilst ensuring that the sampling distribution is still valid.
+
+With this in mind, we run a minimisation algorithm in order to minimise
+
+$$\sum_{i=1}^{20} (\sigma_i^2 - s_i)^2$$
+
+where $\sigma_i^2$ is the variance of the weekly returns of stock $i$ and $s_i$ is the $i$th element of $\textbf{s}$. The minimisation is constrained by the need for the smallest eigenvalue of the matrix
+
+$$2\cdot diag(\textbf{s}) - diag(\textbf{s})\cdot\Sigma^{-1}\cdot diag(\textbf{s})$$
+
+to be greater than or equal to zero. This ensures that the covariance matrix of the knockoff sampling distribution is positive-semidefinite.
+
+Following this procedure, we find that all the knockoffs have similar covariances with the other features and knockoffs as their originals. What we're mostly interested in, however, is how correlated the features are with their knockoffs. When dealing with a Gaussian multivariate, the only moment of interest when generating knockoffs is the covariance.
+
+Ideally, for a good set of knockoffs, we want the correlation between the feature and its knockoff to be as close to zero as possible. Be aware that, because this is a Gaussian copula, the variables are all standard normal distributions; therefore, the correlation is equal to the covariance. Here are the top 5 and bottom 5 stocks in regard to the correlation between the feature and the knockoff.
+
+$$\begin{tabular}{l l}
+\text{CSGN}& 0.176 \\
+\text{LONN}& 0.222 \\
+\text{ROG}& 0.254 \\
+\text{SCMN}& 0.311 \\
+\text{NESN}& 0.312 \\
+\dots & \dots \\
+\text{NOVN}& 0.636 \\
+\text{UHR}& 0.658 \\
+\text{SREN}& 0.674 \\
+\text{CFR}& 0.757 \\
+\text{UBSG}& 0.764 \\
+\end{tabular}$$
+
+Having previously done this analysis with weekly data and, therefore, much less data (97 observations), we find that increasing the number of observations also improves the viability of the knockoffs. Using weekly data, the average correlation for the 20 stocks was around 0.75 and the maximum was 0.91. Now the maximum is 0.75 and the average is around 0.4.
+
+\subsection{Robustness}
+
+To see if the stock selection generated by comparing the SMI constituent stocks with their auto-encoded versions is linked to the trading volume of the stock, we run a linear regression between the information loss score and the total trading volume in the period and find a very poor fit with a model $R^2$ of $\sim$$0.6\%$. We conclude that there is no connection between trading volume and information loss from the auto-encoder.
+
+%\section*{References}
+
+\bibliography{knockoff}
+
+\end{document}
