@@ -172,9 +172,11 @@ def coku_ko_match(x, how) :
                 
     return output
 
+xmean = NonlinearConstraint(is_mean, 0, 0.0004)
+xvar = NonlinearConstraint(is_var, 0, 0.000011)
 uniform = NonlinearConstraint(is_uniform, 0.1, 1)
-cov0 = NonlinearConstraint(cov_match, 0, 1e-5)
-cov0_ko = NonlinearConstraint(cov_ko_match, 0, 1e-5)
+cov0 = NonlinearConstraint(cov_match, 0, 0)
+cov0_ko = NonlinearConstraint(cov_ko_match, 0, 0)
 
 cosk0 = NonlinearConstraint(lambda x: cosk_match(x, 'left'), 0, 1e-5)
 cosk0_ko = NonlinearConstraint(lambda x: cosk_ko_match(x, 'left'), 0, 1e-5)
@@ -188,7 +190,7 @@ coku1_ko = NonlinearConstraint(lambda x: coku_ko_match(x, 'right'), 0, 1e-5)
 coku2 = NonlinearConstraint(lambda x: coku_match(x, 'center'), 0, 1e-5)
 coku2_ko = NonlinearConstraint(lambda x: coku_ko_match(x, 'center'), 0, 1e-5)
                 
-constraints = (uniform, cov0)
+constraints = (xmean, xvar, uniform, cov0)#, cosk0, cosk1)
 
 def squared_cov(x) :
     result = 0
@@ -198,26 +200,60 @@ def squared_cov(x) :
         result += value
         
     return result
+
+import datetime as dt
     
-res = minimize(squared_cov, test.reshape(1,-1)[0],
+print('Start:')
+print(dt.datetime.now())
+res = minimize(squared_cov, rng.uniform(0,1,n*p),
                bounds=[(0,1) for _ in range(n*p)],
                constraints=constraints)
 
+print('End:')
+print(dt.datetime.now())
 
 
 
 
+"""
+Feature only cov: 2H46
+Feature only cov + coskew: 
 
 
 
+for k in range(p) :
+    print(k)
+    print(f'Mean: {round(res.x[k*n:(k+1)*n].mean(),4)}')
+    print(f'Var: {round(res.x[k*n:(k+1)*n].var(),4)}')
+    print(f'KS pvalue: {round(kstest(res.x[k*n:(k+1)*n],"uniform").pvalue,4)}')
+    
+    print('Correlation: Real – With Feature – With Knockoff')
+    for k1 in range(p) :
+        if k1 != k :
+            base = round(np.corrcoef(test[k,:],test[k1,:])[0,1],3)
+            feat = round(np.corrcoef(res.x[k*n:(k+1)*n],test[k1,:])[0,1],3)
+            knock = round(np.corrcoef(res.x[k*n:(k+1)*n],res.x[k1*n:(k1+1)*n])[0,1],3)
+            print(f'{k}\t{k1}\t{base}\t{feat}\t{knock}')
+            
+    print('Left Coskewness: Real – With Feature – With Knockoff')
+    for k1 in range(p) :
+        if k1 != k :
+            base = round(coskew(test[k,:],test[k1,:],"left"),3)
+            feat = round(coskew(res.x[k*n:(k+1)*n],test[k1,:],"left"),3)
+            knock = round(coskew(res.x[k*n:(k+1)*n],res.x[k1*n:(k1+1)*n],"left"),3)
+            print(f'{k}\t{k1}\t{base}\t{feat}\t{knock}')
+            
+    print('Right Coskewness: Real – With Feature – With Knockoff')
+    for k1 in range(p) :
+        if k1 != k :
+            base = round(coskew(test[k,:],test[k1,:],"right"),3)
+            feat = round(coskew(res.x[k*n:(k+1)*n],test[k1,:],"right"),3)
+            knock = round(coskew(res.x[k*n:(k+1)*n],res.x[k1*n:(k1+1)*n],"right"),3)
+            print(f'{k}\t{k1}\t{base}\t{feat}\t{knock}')
+            
+    print(' ')
 
-
-
-
-
-
-
-
+"""
 
 
 
