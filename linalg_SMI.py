@@ -10,7 +10,7 @@ import pandas as pd
 import datetime as dt
 from scipy.optimize import minimize, NonlinearConstraint
 
-import knockoff as ko
+import knockoff_lib as ko
 
 test = pd.read_csv('smi_uniform.csv', index_col=0)
 test = test.values
