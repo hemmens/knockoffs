@@ -12,7 +12,7 @@ import math
 from scipy.optimize import minimize, NonlinearConstraint
 from scipy.stats import kstest
 
-import knockoff as ko
+import knockoff_lib as ko
 
 ps = [2,4,8,16,32,64,128]
 ns = [100,1000,10000,1000000,1000000]
