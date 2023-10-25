@@ -8,6 +8,7 @@ Created on Fri Oct  6 16:29:59 2023
 import numpy as np
 import pandas as pd
 import datetime as dt
+import pickle as pkl
 from scipy.optimize import minimize, NonlinearConstraint
 
 import knockoff_lib as ko
@@ -90,4 +91,5 @@ end = dt.datetime.now()
 print('End:')
 print(end)
 
-
+with open('smi_knockoffs.pkl', 'wb') as fp :
+    pkl.dump(res)
