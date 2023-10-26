@@ -13,6 +13,12 @@ from scipy.optimize import minimize, NonlinearConstraint
 
 import knockoff_lib as ko
 
+x0_type = 'candes_knockoff'
+# Use "features" to use the features as the initial guess.
+# Use "random" to use a random set of uniform variables.
+# Use "constant" to use an array of all 0.5.
+# Use any other string use the Candes-derived knockoff.
+
 test = pd.read_csv('smi_uniform.csv', index_col=0)
 test = test.values
 p, n = test.shape
@@ -75,9 +81,18 @@ def squared_cov(x) :
         
     return result
 
-rng = np.random.default_rng(24)
-x0 = rng.uniform(0,1,(p,n))
-x0 = x0.reshape(-1,)
+if x0_type == 'features' :
+    x0 = test.reshape(-1,)
+elif x0_type == 'random' :
+    rng = np.random.default_rng(24)
+    x0 = rng.uniform(0,1,(p,n))
+    x0 = x0.reshape(-1,)
+elif x0_type == 'constant' :
+    x0 = np.array([0.5 for _ in range(n*p)])
+else :
+    x0 = pd.read_csv('smi_uniform_x0.csv', index_col=0)
+    x0 = x0.values
+    x0 = x0.reshape(-1,)
     
 start = dt.datetime.now()
 print('Start:')
