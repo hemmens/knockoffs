@@ -22,7 +22,7 @@ x0_type = 'candes_knockoff'
 test = pd.read_csv('smi_uniform.csv', index_col=0)
 test = test.values
 p, n = test.shape
-ind = '00_cov'
+ind = '00'
 
 mean_limit = 3*np.sqrt(((test.mean(axis=1)-1/2)**2).mean())
 var_limit = 3*np.sqrt(((test.var(axis=1)-1/12)**2).mean())
