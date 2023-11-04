@@ -76,6 +76,6 @@ print('End:')
 print(end)
 
 with open(f'smi_knockoffs_{ind}.pkl', 'wb') as fp :
-    pkl.dump(res)
+    pkl.dump(res,fp)
 
 
