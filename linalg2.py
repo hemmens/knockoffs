@@ -16,7 +16,8 @@ import knockoff_lib as ko
 
 ps = [2,4,8,16,32,64,128]
 ns = [100,1000,10000,1000000,1000000]
-ind = '14'
+ind = '00'
+max_iter = 3
 
 x0_type = 'candes_knockoff'
 # Use "features" to use the features as the initial guess.
@@ -24,7 +25,7 @@ x0_type = 'candes_knockoff'
 # Use "constant" to use an array of all 0.5.
 # Use any other string use the Candes-derived knockoff.
 
-for p in ps[:5] :
+for p in ps[:3] :
     for n in ns[:3] :
         print(f'{p}\t{n}')
         rng = np.random.default_rng(24)
@@ -32,26 +33,29 @@ for p in ps[:5] :
         
         # Artificially generated covariance, coskewness, and cokurtosis
         for k in range(p) :
-            if k%4 == 0 : 
+            if k % 4 == 0 : 
                 pt = test[k,:]/sum(test[k,:])
                 test[k,:] = rng.choice(test[k,:], size=n, replace=False, p=pt)
-            elif k%4 == 1 :
+            elif k % 4 == 1 :
                 pt = [1 - x for x in test[k,:]]
                 pt /= sum(pt)
                 test[k,:] = rng.choice(test[k,:], size=n, replace=False, p=pt)
-            elif k%4 == 2 :
+            elif k % 4 == 2 :
                 pt = [abs(x-0.5) for x in test[k,:]]
                 pt /= sum(pt)
                 test[k,:] = rng.choice(test[k,:], size=n, replace=False, p=pt)
                 
         # Constraints
+            # Determine bounds for knockoff mean and variance using data
         mean_limit = 3*np.sqrt(((test.mean(axis=1)-1/2)**2).mean())
         var_limit = 3*np.sqrt(((test.var(axis=1)-1/12)**2).mean())
         
+            # Uniform distribution constraints
         xmean = NonlinearConstraint(lambda x: ko.is_mean(x,p,n), 0, mean_limit**2)
         xvar = NonlinearConstraint(lambda x: ko.is_var(x,p,n), 0, var_limit**2)
         uniform = NonlinearConstraint(lambda x: ko.is_uniform(x,p,n), 0.1, 1)
         
+            # Moment match constraints
         cov_con = NonlinearConstraint(lambda x: ko.cov_match(x,p,n,test), 0, 0)
         cosk_con = NonlinearConstraint(lambda x: ko.cosk_match(x,p,n,test), 0, 0)
         coku_con = NonlinearConstraint(lambda x: ko.coku_match(x,p,n,test), 0, 0)
@@ -90,7 +94,7 @@ for p in ps[:5] :
         res = minimize(squared_corr, x0,
                        bounds=[(0,1) for _ in range(n*p)],
                        constraints=constraints,
-                       tol=1e-3, options={'maxiter': 5})
+                       tol=1e-3, options={'maxiter': max_iter})
         
         end = dt.datetime.now()
         print('End:')
