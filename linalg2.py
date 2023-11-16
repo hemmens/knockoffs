@@ -26,7 +26,7 @@ x0_type = 'candes_knockoff'
 # Use any other string use the Candes-derived knockoff.
 
 for p in ps[:3] :
-    for n in ns[:3] :
+    for n in ns[:1] :
         print(f'{p}\t{n}')
         rng = np.random.default_rng(24)
         test = rng.uniform(0,1,(p,n))
