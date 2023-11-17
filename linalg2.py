@@ -27,7 +27,7 @@ x0_type = 'candes_knockoff'
 
 for p in ps[:3] :
     for n in ns[:1] :
-        #print(f'{p}\t{n}')
+        print(f"{p}\t{n}")
         rng = np.random.default_rng(24)
         test = rng.uniform(0,1,(p,n))
         
@@ -89,16 +89,16 @@ for p in ps[:3] :
             
         # Optimization
         start = dt.datetime.now()
-        #print('Start:')
-        #print(start)
+        print("Start:")
+        print(start)
         res = minimize(squared_corr, x0,
                        bounds=[(0,1) for _ in range(n*p)],
                        constraints=constraints,
                        tol=1e-3, options={'maxiter': max_iter})
         
         end = dt.datetime.now()
-        #print('End:')
-        #print(end)
+        print("End:")
+        print(end)
         
         # Output Results to Excel
         x1 = res.x.reshape(p,n)
@@ -209,7 +209,7 @@ for p in ps[:3] :
                 results['Candes with Knockoff'] += [round(can_coku[k1,k0],3)]
 
         results = pd.DataFrame.from_dict(results)
-        results.to_excel(f'knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}.xlsx')
+        results.to_excel(f"knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}.xlsx")
 
 
 
