@@ -16,7 +16,7 @@ import knockoff_lib as ko
 
 ps = [2,4,8,16,32,64,128]
 ns = [100,1000,10000,1000000,1000000]
-ind = '00'
+ind = '04'
 max_iter = [3, 10, 20]
 
 x0_type = 'candes_knockoff'
