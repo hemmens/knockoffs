@@ -25,8 +25,8 @@ x0_type = 'candes_knockoff'
 # Use "constant" to use an array of all 0.5.
 # Use any other string use the Candes-derived knockoff.
 
-for p in ps[:4] :
-    for n in ns[:3] :
+for p in ps[1:2] :
+    for n in ns[:2] :
         print(f"{p}\t{n}")
         rng = np.random.default_rng(24)
         test = rng.uniform(0,1,(p,n))
@@ -211,7 +211,7 @@ for p in ps[:4] :
     
             results = pd.DataFrame.from_dict(results)
             results.fillna('', inplace=True)
-            results.to_csv(f'knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}_{mi}.csv')
+            results.to_csv('knockoffs{}_p{}_n{}_{:03d}.csv'.format(ind,round(math.log(p,2)),round(math.log(n,10)),mi))
 
 
 
