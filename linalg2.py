@@ -75,19 +75,19 @@ for p in ps[:4] :
         
         # Generate Initial Guess
         if x0_type == 'features' :
-            x0 = test.reshape(-1,)
+            xc = test.copy()
         elif x0_type == 'random' :
             rng = np.random.default_rng(35)
-            x0 = rng.uniform(0,1,(p,n))
-            x0 = x0.reshape(-1,)
+            xc = rng.uniform(0,1,(p,n))
         elif x0_type == 'constant' :
-            x0 = np.array([0.5 for _ in range(n*p)])
+            xc = np.array([0.5 for _ in range(n*p)])
         else :
-            x0 = ko.get_candes(test)
-            x0 = x0.reshape(-1,)
+            xc = ko.get_candes(test)
             
 
         for mi in max_iter :
+            x0 = xc.copy().reshape(-1,)
+            
             # Optimization
             start = dt.datetime.now()
             print("Start:")
