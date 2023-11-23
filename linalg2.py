@@ -25,8 +25,8 @@ x0_type = 'candes_knockoff'
 # Use "constant" to use an array of all 0.5.
 # Use any other string use the Candes-derived knockoff.
 
-for p in ps[:3] :
-    for n in ns[:1] :
+for p in ps[:4] :
+    for n in ns[:3] :
         print(f"{p}\t{n}")
         rng = np.random.default_rng(24)
         test = rng.uniform(0,1,(p,n))
