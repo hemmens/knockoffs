@@ -17,7 +17,7 @@ import knockoff_lib as ko
 ps = [2,4,8,16,32,64,128]
 ns = [100,1000,10000,1000000,1000000]
 ind = '00'
-max_iter = 3
+max_iter = [3, 10, 20]
 
 x0_type = 'candes_knockoff'
 # Use "features" to use the features as the initial guess.
@@ -86,131 +86,132 @@ for p in ps[:4] :
             x0 = ko.get_candes(test)
             x0 = x0.reshape(-1,)
             
-            
-        # Optimization
-        start = dt.datetime.now()
-        print("Start:")
-        print(start)
-        res = minimize(squared_corr, x0,
-                       bounds=[(0,1) for _ in range(n*p)],
-                       constraints=constraints,
-                       tol=1e-3, options={'maxiter': max_iter})
-        
-        end = dt.datetime.now()
-        print("End:")
-        print(end)
-        
-        # Output Results to Excel
-        x1 = res.x.reshape(p,n)
-        res_mean = x1.mean(axis=1)
-        res_var = x1.var(axis=1)
-        res_unif = np.apply_along_axis(kstest,1,x1,cdf='uniform')[:,1]
-        
-        res_corr = np.corrcoef(x1,test)
-        res_cosk = ko.coskew(np.vstack((x1,test)))
-        res_coku = ko.cokurt(np.vstack((x1,test)), 'left')
-        res_coku_c = ko.cokurt(np.vstack((x1,test)))
-        
-        x0 = x0.reshape(p,n)
-        can_corr = np.corrcoef(x0,test)
-        can_cosk = ko.coskew(np.vstack((x0,test)))
-        can_coku = ko.cokurt(np.vstack((x0,test)), 'left')
-        can_coku_c = ko.cokurt(np.vstack((x0,test)))
-        
-        results = {}
-        results['Knockoff Variable'] = [None]
-        results['Comparison Variable'] = [None]
-        results['Measure'] = ['Time Taken']
-        results['Real Value'] = [(end-start).seconds]
-        results['Value with Feature'] = [None]
-        results['Candes with Feature'] = [None]
-        results['Value with Knockoff'] = [None]
-        results['Candes with Knockoff'] = [None]
-        for k0 in range(p) :
-            results['Knockoff Variable'] += [k0]
-            results['Comparison Variable'] += [None]
-            results['Measure'] += ['Mean'] 
-            results['Real Value'] += [round(res_mean[k0],4)]
-            results['Value with Feature'] += [None]
-            results['Candes with Feature'] += [None]
-            results['Value with Knockoff'] += [None]
-            results['Candes with Knockoff'] += [None]
-            
-            results['Knockoff Variable'] += [k0]
-            results['Comparison Variable'] += [None]
-            results['Measure'] += ['Variance'] 
-            results['Real Value'] += [round(res_var[k0],4)]
-            results['Value with Feature'] += [None]
-            results['Candes with Feature'] += [None]
-            results['Value with Knockoff'] += [None]
-            results['Candes with Knockoff'] += [None]
-            
-            results['Knockoff Variable'] += [k0]
-            results['Comparison Variable'] += [None]
-            results['Measure'] += ['Uniformity_pvalue'] 
-            results['Real Value'] += [round(res_unif[k0],4)]
-            results['Value with Feature'] += [None]
-            results['Candes with Feature'] += [None]
-            results['Value with Knockoff'] += [None]
-            results['Candes with Knockoff'] += [None]
-            for k1 in range(p) :                
-                results['Knockoff Variable'] += [k0]
-                results['Comparison Variable'] += [k1]
-                results['Measure'] += ['Correlation']
-                results['Real Value'] += [round(res_corr[k0+p,k1+p],3)]
-                results['Value with Feature'] += [round(res_corr[k0,k1+p],3)]
-                results['Candes with Feature'] += [round(can_corr[k0,k1+p],3)]
-                results['Value with Knockoff'] += [round(res_corr[k0,k1],3)]
-                results['Candes with Knockoff'] += [round(can_corr[k0,k1],3)]
-                
-                results['Knockoff Variable'] += [k0]
-                results['Comparison Variable'] += [k1]
-                results['Measure'] += ['Left Coskewness']
-                results['Real Value'] += [round(res_cosk[k0+p,k1+p],3)]
-                results['Value with Feature'] += [round(res_cosk[k0,k1+p],3)]
-                results['Candes with Feature'] += [round(can_cosk[k0,k1+p],3)]
-                results['Value with Knockoff'] += [round(res_cosk[k0,k1],3)]
-                results['Candes with Knockoff'] += [round(can_cosk[k0,k1],3)]
-                
-                results['Knockoff Variable'] += [k0]
-                results['Comparison Variable'] += [k1]
-                results['Measure'] += ['Right Coskewness']
-                results['Real Value'] += [round(res_cosk[k1+p,k0+p],3)]
-                results['Value with Feature'] += [round(res_cosk[k1+p,k0],3)]
-                results['Candes with Feature'] += [round(can_cosk[k1+p,k0],3)]
-                results['Value with Knockoff'] += [round(res_cosk[k1,k0],3)]
-                results['Candes with Knockoff'] += [round(can_cosk[k1,k0],3)]
-        
-                results['Knockoff Variable'] += [k0]
-                results['Comparison Variable'] += [k1]
-                results['Measure'] += ['Left Cokurtosis']
-                results['Real Value'] += [round(res_coku[k0+p,k1+p],3)]
-                results['Value with Feature'] += [round(res_coku[k0,k1+p],3)]
-                results['Candes with Feature'] += [round(can_coku[k0,k1+p],3)]
-                results['Value with Knockoff'] += [round(res_coku[k0,k1],3)]
-                results['Candes with Knockoff'] += [round(can_coku[k0,k1],3)]
-                
-                results['Knockoff Variable'] += [k0]
-                results['Comparison Variable'] += [k1]
-                results['Measure'] += ['Central Cokurtosis']
-                results['Real Value'] += [round(res_coku_c[k0+p,k1+p],3)]
-                results['Value with Feature'] += [round(res_coku_c[k0,k1+p],3)]
-                results['Candes with Feature'] += [round(can_coku_c[k0,k1+p],3)]
-                results['Value with Knockoff'] += [round(res_coku_c[k0,k1],3)]
-                results['Candes with Knockoff'] += [round(can_coku_c[k0,k1],3)]
-                
-                results['Knockoff Variable'] += [k0]
-                results['Comparison Variable'] += [k1]
-                results['Measure'] += ['Right Cokurtosis']
-                results['Real Value'] += [round(res_coku[k1+p,k0+p],3)]
-                results['Value with Feature'] += [round(res_coku[k1+p,k0],3)]
-                results['Candes with Feature'] += [round(can_coku[k1+p,k0],3)]
-                results['Value with Knockoff'] += [round(res_coku[k1,k0],3)]
-                results['Candes with Knockoff'] += [round(can_coku[k1,k0],3)]
 
-        results = pd.DataFrame.from_dict(results)
-        results.fillna('', inplace=True)
-        results.to_csv(f'knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}.csv')
+        for mi in max_iter :
+            # Optimization
+            start = dt.datetime.now()
+            print("Start:")
+            print(start)
+            res = minimize(squared_corr, x0,
+                           bounds=[(0,1) for _ in range(n*p)],
+                           constraints=constraints,
+                           tol=1e-3, options={'maxiter': mi})
+            
+            end = dt.datetime.now()
+            print("End:")
+            print(end)
+            
+            # Output Results to Excel
+            x1 = res.x.reshape(p,n)
+            res_mean = x1.mean(axis=1)
+            res_var = x1.var(axis=1)
+            res_unif = np.apply_along_axis(kstest,1,x1,cdf='uniform')[:,1]
+            
+            res_corr = np.corrcoef(x1,test)
+            res_cosk = ko.coskew(np.vstack((x1,test)))
+            res_coku = ko.cokurt(np.vstack((x1,test)), 'left')
+            res_coku_c = ko.cokurt(np.vstack((x1,test)))
+            
+            x0 = x0.reshape(p,n)
+            can_corr = np.corrcoef(x0,test)
+            can_cosk = ko.coskew(np.vstack((x0,test)))
+            can_coku = ko.cokurt(np.vstack((x0,test)), 'left')
+            can_coku_c = ko.cokurt(np.vstack((x0,test)))
+            
+            results = {}
+            results['Knockoff Variable'] = [None]
+            results['Comparison Variable'] = [None]
+            results['Measure'] = ['Time Taken']
+            results['Real Value'] = [(end-start).seconds]
+            results['Value with Feature'] = [None]
+            results['Candes with Feature'] = [None]
+            results['Value with Knockoff'] = [None]
+            results['Candes with Knockoff'] = [None]
+            for k0 in range(p) :
+                results['Knockoff Variable'] += [k0]
+                results['Comparison Variable'] += [None]
+                results['Measure'] += ['Mean'] 
+                results['Real Value'] += [round(res_mean[k0],4)]
+                results['Value with Feature'] += [None]
+                results['Candes with Feature'] += [None]
+                results['Value with Knockoff'] += [None]
+                results['Candes with Knockoff'] += [None]
+                
+                results['Knockoff Variable'] += [k0]
+                results['Comparison Variable'] += [None]
+                results['Measure'] += ['Variance'] 
+                results['Real Value'] += [round(res_var[k0],4)]
+                results['Value with Feature'] += [None]
+                results['Candes with Feature'] += [None]
+                results['Value with Knockoff'] += [None]
+                results['Candes with Knockoff'] += [None]
+                
+                results['Knockoff Variable'] += [k0]
+                results['Comparison Variable'] += [None]
+                results['Measure'] += ['Uniformity_pvalue'] 
+                results['Real Value'] += [round(res_unif[k0],4)]
+                results['Value with Feature'] += [None]
+                results['Candes with Feature'] += [None]
+                results['Value with Knockoff'] += [None]
+                results['Candes with Knockoff'] += [None]
+                for k1 in range(p) :                
+                    results['Knockoff Variable'] += [k0]
+                    results['Comparison Variable'] += [k1]
+                    results['Measure'] += ['Correlation']
+                    results['Real Value'] += [round(res_corr[k0+p,k1+p],3)]
+                    results['Value with Feature'] += [round(res_corr[k0,k1+p],3)]
+                    results['Candes with Feature'] += [round(can_corr[k0,k1+p],3)]
+                    results['Value with Knockoff'] += [round(res_corr[k0,k1],3)]
+                    results['Candes with Knockoff'] += [round(can_corr[k0,k1],3)]
+                    
+                    results['Knockoff Variable'] += [k0]
+                    results['Comparison Variable'] += [k1]
+                    results['Measure'] += ['Left Coskewness']
+                    results['Real Value'] += [round(res_cosk[k0+p,k1+p],3)]
+                    results['Value with Feature'] += [round(res_cosk[k0,k1+p],3)]
+                    results['Candes with Feature'] += [round(can_cosk[k0,k1+p],3)]
+                    results['Value with Knockoff'] += [round(res_cosk[k0,k1],3)]
+                    results['Candes with Knockoff'] += [round(can_cosk[k0,k1],3)]
+                    
+                    results['Knockoff Variable'] += [k0]
+                    results['Comparison Variable'] += [k1]
+                    results['Measure'] += ['Right Coskewness']
+                    results['Real Value'] += [round(res_cosk[k1+p,k0+p],3)]
+                    results['Value with Feature'] += [round(res_cosk[k1+p,k0],3)]
+                    results['Candes with Feature'] += [round(can_cosk[k1+p,k0],3)]
+                    results['Value with Knockoff'] += [round(res_cosk[k1,k0],3)]
+                    results['Candes with Knockoff'] += [round(can_cosk[k1,k0],3)]
+            
+                    results['Knockoff Variable'] += [k0]
+                    results['Comparison Variable'] += [k1]
+                    results['Measure'] += ['Left Cokurtosis']
+                    results['Real Value'] += [round(res_coku[k0+p,k1+p],3)]
+                    results['Value with Feature'] += [round(res_coku[k0,k1+p],3)]
+                    results['Candes with Feature'] += [round(can_coku[k0,k1+p],3)]
+                    results['Value with Knockoff'] += [round(res_coku[k0,k1],3)]
+                    results['Candes with Knockoff'] += [round(can_coku[k0,k1],3)]
+                    
+                    results['Knockoff Variable'] += [k0]
+                    results['Comparison Variable'] += [k1]
+                    results['Measure'] += ['Central Cokurtosis']
+                    results['Real Value'] += [round(res_coku_c[k0+p,k1+p],3)]
+                    results['Value with Feature'] += [round(res_coku_c[k0,k1+p],3)]
+                    results['Candes with Feature'] += [round(can_coku_c[k0,k1+p],3)]
+                    results['Value with Knockoff'] += [round(res_coku_c[k0,k1],3)]
+                    results['Candes with Knockoff'] += [round(can_coku_c[k0,k1],3)]
+                    
+                    results['Knockoff Variable'] += [k0]
+                    results['Comparison Variable'] += [k1]
+                    results['Measure'] += ['Right Cokurtosis']
+                    results['Real Value'] += [round(res_coku[k1+p,k0+p],3)]
+                    results['Value with Feature'] += [round(res_coku[k1+p,k0],3)]
+                    results['Candes with Feature'] += [round(can_coku[k1+p,k0],3)]
+                    results['Value with Knockoff'] += [round(res_coku[k1,k0],3)]
+                    results['Candes with Knockoff'] += [round(can_coku[k1,k0],3)]
+    
+            results = pd.DataFrame.from_dict(results)
+            results.fillna('', inplace=True)
+            results.to_csv(f'knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}_{mi}.csv')
 
 
 
