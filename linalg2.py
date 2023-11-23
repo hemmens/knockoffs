@@ -209,7 +209,8 @@ for p in ps[:3] :
                 results['Candes with Knockoff'] += [round(can_coku[k1,k0],3)]
 
         results = pd.DataFrame.from_dict(results)
-        results.to_excel(f"knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}.xlsx")
+        results.fillna('', inplace=True)
+        results.to_csv(f'knockoffs{ind}_p{round(math.log(p,2))}_n{round(math.log(n,10))}.csv')
 
 
 
