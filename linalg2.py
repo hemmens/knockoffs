@@ -25,9 +25,8 @@ x0_type = 'candes_knockoff'
 # Use "constant" to use an array of all 0.5.
 # Use any other string use the Candes-derived knockoff.
 
-for p in ps[1:2] :
+for p in ps[1:3] :
     for n in ns[:2] :
-        print(f"{p}\t{n}")
         rng = np.random.default_rng(24)
         test = rng.uniform(0,1,(p,n))
         
@@ -86,6 +85,7 @@ for p in ps[1:2] :
             
 
         for mi in max_iter :
+            print(f"{p}\t{n}\t{mi}")
             x0 = xc.copy().reshape(-1,)
             
             # Optimization
@@ -95,7 +95,8 @@ for p in ps[1:2] :
             res = minimize(squared_corr, x0,
                            bounds=[(0,1) for _ in range(n*p)],
                            constraints=constraints,
-                           tol=1e-3, options={'maxiter': mi})
+                           tol=1e-3, options={'maxiter': mi,
+                                              'disp': True})
             
             end = dt.datetime.now()
             print("End:")
