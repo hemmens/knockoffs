@@ -13,6 +13,9 @@ In this code, you can sample a set of p independent random Uniform(0,1) variable
 
 The uniform variables are then transformed into Normal(0,1) variables with a positive semidefinite covariance matrix. We use the Candès (2018) methodology to generate an initial value for the Model-X Knockoffs of a Gaussian multivariate distribution. These knockoffs are very fast to generate and normally satisfy the covariance conditions for the knockoffs. We give this as our first guess into the optimization algorithm that works to minimize the squared correlation between each knockoff and its feature, while ensuring that the coskewness and cokurtosis conditions for the knockoffs are met.
 
+## linalg_graph.py
+This code takes the csv files produced by linalg2.py and plots the evolution of the moment constraint convergence as the maximum number of iterations is increased.
+
 ## linalg_SMI2.py
 In this code, we use real world data from the Swiss Stock Market Index, the SMI. We use daily returns data for the 20 constituent stocks from 29th May 2017 to 8th April 2019, giving us 481 observations. We use a copula to estimate the univariate distributions of these 20 return profiles and find that most of them are Student-t distributions, with one fitting a LogLaplace distribution. We use these distributions to convert the returns into Uniform(0,1) variables. These Uniform(0,1) variables are available in smi_uniform.csv.
 
