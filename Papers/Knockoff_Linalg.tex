@@ -66,7 +66,7 @@
 %\address[mysecondaryaddress]{360 Park Avenue South, New York}
 
 \begin{abstract}
-This template helps you to create a properly formatted \LaTeX\ manuscript.
+As new Model-X knockoff construction techniques are developed, primarily concerned with determining the correct conditional distribution from which to sample, we focus less on deriving the correct multivariate distribution and instead ask if ``perfect" knockoffs can be constructed using linear algebra. Using mean absolute correlation between knockoffs and features as a measure of quality, we do produce knockoffs that are pseudo-perfect, however, the optimization algorithm is computationally very expensive. We outline a series of methods to significantly reduce the computation time of the algorithm.
 \end{abstract}
 
 \begin{keyword}
@@ -79,27 +79,54 @@ Model-X Knockoffs\sep Linear Algebra
 
 \section{Introduction}
 
-Ever since its introduction into the literature by \citet{candes2018panning}, Model-X Knockoffs have received a lot of attention. In essence, it is a way of controlling the False Discovery Rate (FDR) by creating statistical doppelgangers of the input features of a machine learning model. By including the original features as well as their knockoffs, one gets a useful tool for identifying features that are being chosen through statistical noise rather than through any real predictive power.
+\citet{candes2018panning} asked how to control the false discovery rate in high-dimensional non-linear models, for example, what if you have more features than observations but you know only a handful of the features has any predictive power on the response variable?
 
-However, research is ongoing as to how to best generate Model-X Knockoffs. \citet{candes2018panning} demonstrates how one can generate them for features that follow a multivariate Normal distribution, but this is rather a narrow scope for the technique. \citet{romano2020deep} uses deep generative models to build a machine for sampling approximate model-X knockoffs for arbitrary and unspecified data distributions. \citet{bates2021metropolized} find that applying the Metropolis-Hastings (MH) algorithm (\citet{metropolis1953equation}, \citet{hastings1970monte}) can produce valid knockoffs, in part due to the time-reversibility of the Monte Carlo Markov Chain method that adapts so well to the core feature of reversibility of the knockoff framework. And \citet{ren2021derandomizing} build on these by introducing a derandomizing step into the selection algorithm such that the knockoffs that are generated are more consistent without compromising statistical power.
+The authors' solution was the introduction of Model-X Knockoffs – a set of random variables that statistically mimic the original feature set but, by design, do not have any predictive power on the response variable. The definition of a Model-X Knockoff, $\tilde{X}$, for a feature set $X$ is as follows:
 
-We present a method for generating Model-X Knockoffs using linear algebra, which in a perfect world would generate the best possible Knockoffs, but in reality require a frequently impractical amount of computer processing time. We offer a solution that can produce decent Knockoffs using linear algebra that complete in a reasonable amount of time.
-
-\subsection{Model-X Knockoffs Definition}
-
-Definition 3.1 of \citet{candes2018panning} states that the Model-X knockoffs for the family of random variables $X=(X_1,\dots,X_p)$ are a new family of random variables $\tilde{X}=(\tilde{X}_1,\dots,\tilde{X}_p)$ constructed with the following two properties:
 \begin{enumerate}
 \item for any subset $S\subset\{1,\dots,p\}$, $(X,\tilde{X})_{\text{swap}(S)}\stackrel{d}{=}(X,\tilde{X})$;
 \item $\tilde{X}\Perp Y$ $|$ $X$ if there is a response $Y$.
 \end{enumerate}
 
-In the above definition, $(X,\tilde{X})_{\text{swap}(S)}$ is obtained from $(X,\tilde{X})$ by swapping the entries $X_j$ and $\tilde{X}_j$ for each $j\in S$; for example, with $p=3$ and $S=\{2,3\}$,
+Note that as long as $\tilde{X}$ is constructed without knowledge of $Y$, condition 2 is automatically satisfied.
 
-$$(X_1,X_2,X_3,\tilde{X}_1,\tilde{X}_2,\tilde{X}_3)_{\text{swap}(\{2,3\})}\stackrel{d}{=}(X_1,\tilde{X}_2,\tilde{X}_3,\tilde{X}_1,X_2,X_3).$$
+\citet{candes2018panning} test this methodology by replicating , who identify gene clusters that predict the development of Crohn's disease in patients. Whereas the original study was able to identify 9 gene clusters, by implementing the Model-X Knockoff methodology, \citet{candes2018panning} was able to identify 18 gene clusters.
+
+Since then, several steps have been taken to improve the methodology. For example, \citet{bates2021metropolized} add implementation of the Metropolis-Hastings algorithm (\citet{metropolis1953equation}, \citet{hastings1970monte}) which, although more computationally expensive, improves the ``quality" of the knockoffs as measured by the mean absolute correlation between the knockoffs and their features.
+
+The one element that connects every approach to generating knockoffs since the 2018 paper is the focus on deriving the correct conditional distribution from which to sample the knockoffs. But is this a necessary step?
+
+In every case we start with a $p\times n$ matrix and our goal is to generate another $p\times n$ matrix that fulfils a number of linear constraints. Hence, it is possible to reframe this problem not as deriving the correct conditional distribution from which to sample, but a linear algebra optimization problem subject to a series of linear constraints.
+
+In this paper, section 2 summarizes the literature on knockoff construction to date; section 3 outlines how to frame the problem using linear algebra; section 4 tests the methodology on a set of artificially generated random variables with enforced non-zero values of coskewness and cokurtosis; section 5 tests the methodology on a real dataset that in particular presents a serious challenge to the knockoff generation procedure in general; section 6 concludes the paper.
+
+\section{Literature Review}
+
+In addition to the initial algorithms put forth by \citet{candes2018panning}, a wide range of knockoff-generating methods have been developed, especially since 2021.
+
+
+
+%Ever since its introduction into the literature by \citet{candes2018panning}, Model-X Knockoffs have received a lot of attention. In essence, it is a way of controlling the False Discovery Rate (FDR) by creating statistical doppelgangers of the input features of a machine learning model. By including the original features as well as their knockoffs, one gets a useful tool for identifying features that are being chosen through statistical noise rather than through any real predictive power.
+%
+%However, research is ongoing as to how to best generate Model-X Knockoffs. \citet{candes2018panning} demonstrates how one can generate them for features that follow a multivariate Normal distribution, but this is rather a narrow scope for the technique. \citet{romano2020deep} uses deep generative models to build a machine for sampling approximate model-X knockoffs for arbitrary and unspecified data distributions. \citet{bates2021metropolized} find that applying the Metropolis-Hastings (MH) algorithm (\citet{metropolis1953equation}, \citet{hastings1970monte}) can produce valid knockoffs, in part due to the time-reversibility of the Monte Carlo Markov Chain method that adapts so well to the core feature of reversibility of the knockoff framework. And \citet{ren2021derandomizing} build on these by introducing a derandomizing step into the selection algorithm such that the knockoffs that are generated are more consistent without compromising statistical power.
+%
+%We present a method for generating Model-X Knockoffs using linear algebra, which in a perfect world would generate the best possible Knockoffs, but in reality require a frequently impractical amount of computer processing time. We offer a solution that can produce decent Knockoffs using linear algebra that complete in a reasonable amount of time.
+%
+%\subsection{Model-X Knockoffs Definition}
+%
+%Definition 3.1 of \citet{candes2018panning} states that the Model-X knockoffs for the family of random variables $X=(X_1,\dots,X_p)$ are a new family of random variables $\tilde{X}=(\tilde{X}_1,\dots,\tilde{X}_p)$ constructed with the following two properties:
+%\begin{enumerate}
+%\item for any subset $S\subset\{1,\dots,p\}$, $(X,\tilde{X})_{\text{swap}(S)}\stackrel{d}{=}(X,\tilde{X})$;
+%\item $\tilde{X}\Perp Y$ $|$ $X$ if there is a response $Y$.
+%\end{enumerate}
+%
+%In the above definition, $(X,\tilde{X})_{\text{swap}(S)}$ is obtained from $(X,\tilde{X})$ by swapping the entries $X_j$ and $\tilde{X}_j$ for each $j\in S$; for example, with $p=3$ and $S=\{2,3\}$,
+%
+%$$(X_1,X_2,X_3,\tilde{X}_1,\tilde{X}_2,\tilde{X}_3)_{\text{swap}(\{2,3\})}\stackrel{d}{=}(X_1,\tilde{X}_2,\tilde{X}_3,\tilde{X}_1,X_2,X_3).$$
 
 \section{Methodology}
 
-Suppose we have a multivariate distribution $$H(x_1,\dots,x_d)=Pr(X_1\le x_1,\dots,X_d\le x_d)$$ where the cumulative distribution function (CDF) of $X_i$ is $F_i:\mathbb{R}\rightarrow [0,1]$. Suppose also that we have a sample of this distribution with $n$ observations. Our goal is to use a linear algebra optimization approach to construct perfect Model-X knockoffs. That is, if the original sample is $\mathcal{X}\equiv(X_1,\dots,X_d)\in \mathbb{R}^{d\times n}$, then we want to find a matrix $\tilde{\mathcal{X}}\equiv(\tilde{X}_1,\dots,\tilde{X}_d)\in \mathbb{R}^{d\times n}$ such that the statistical moments of each feature and the other features are equal to the statistical moments of that feature's knockoff and the other features, as well as between that feature's knockoff and the other features' knockoffs, while minimizing the absolute value of the correlation between each feature and its knockoff.
+Suppose we have a multivariate distribution $$H(x_1,\dots,x_p)=Pr(X_1\le x_1,\dots,X_p\le x_p)$$ where the cumulative distribution function (CDF) of $X_i$ is $F_i:\mathbb{R}\rightarrow [0,1]$. Suppose also that we have a sample of this distribution with $n$ observations. Our goal is to use a linear algebra optimization approach to construct perfect Model-X knockoffs. That is, if the original sample is $\mathcal{X}\equiv(X_1,\dots,X_p)\in \mathbb{R}^{p\times n}$, then we want to find a matrix $\tilde{\mathcal{X}}\equiv(\tilde{X}_1,\dots,\tilde{X}_p)\in \mathbb{R}^{p\times n}$ such that the statistical moments of each feature and the other features are equal to the statistical moments of that feature's knockoff and the other features, as well as between that feature's knockoff and the other features' knockoffs, while minimizing the absolute value of the correlation between each feature and its knockoff.
 
 We focus on equating up to the fourth statistical moment: correlation, coskewness, and cokurtosis. To understand our approach, you have to know that generating knockoffs using linear algebra is disproportionately computationally expensive compared to sampling from a distribution and, as a result, our methodology concentrates on minimizing the amount of work a computer needs to do.
 
@@ -109,21 +136,21 @@ We define our (standardized) $(m,k)$-moment between variables $X$ and $Y$ to be
 
 $$\mu_{m,k}(X,Y) = \frac{\frac{1}{n}\sum_{i=1}^{n}\left((x_i-\mu_{1}(X))^k (y_i-\mu_{1}(Y))^{m-k}\right)}{(\mu_{2}(X))^{k/2}(\mu_{2}(Y))^{(m-k)/2}}$$
 
-where $\mu_{1}(X)=\frac{1}{n}\sum_{i=1}^n x_i$ and $\mu_{2}(X)=\frac{1}{n}\sum_{i=1}^n (x_i-\mu_{1}(X))^2$.
+where $$\mu_{1}(X)=\frac{1}{n}\sum_{i=1}^n x_i$$ and $$\mu_{2}(X)=\frac{1}{n}\sum_{i=1}^n (x_i-\mu_{1}(X))^2$$
 
-We assume that if two random variables $X_i$ and $\tilde{X}_i$ share the same CDF $F_i$, then if $\mu_{m,k}(X_i,X_j)=\mu_{m,k}(\tilde{X}_i,X_j)$, then $\mu_{m,k}(F_i(X_i),F_j(X_j))=\mu_{m,k}(F_i(\tilde{X}_i),F_j(X_j))$. By acknowledging that we can match the moments of variables using their CDF transformation, we can build our code to only accept uniform random variables, on the basis that all features and knockoffs can be reconstructed into their original distributions using the inverse CDF.
+%We assume that if two random variables $X_i$ and $\tilde{X}_i$ share the same CDF $F_i$, then if $\mu_{m,k}(X_i,X_j)=\mu_{m,k}(\tilde{X}_i,X_j)$, then $\mu_{m,k}(F_i(X_i),F_j(X_j))=\mu_{m,k}(F_i(\tilde{X}_i),F_j(X_j))$. By acknowledging that we can match the moments of variables using their CDF transformation, we can build our code to only accept uniform random variables, on the basis that all features and knockoffs can be reconstructed into their original distributions using the inverse CDF.
 
-This means our first three constraints on each knockoff are that they fit a uniform distribution with bounds 0 and 1. Specifically,
+This means our first constraints on each knockoff are that they have the same distributions as their features. We ensure this by determining the distribution of the feature in advance, and then performing a Kolmogorov-Smirnov test on the knockoff. We set the constraint that the p-value of the test's result is as close to 1 as possible.
 
-\begin{enumerate}
-	\item The result of a Kolmogorov-Smirnov test with the base distribution being uniform returns a p-value of at least $p_{KS}$\%.
-	\item The mean value is between the values $\mu_L$ and $\mu_U$ such that $(\mu_L+\mu_U)/2=0.5$.
-	\item The variance is between the values $\sigma_L^2$ and $\sigma_U^2$ such that $(\sigma_L^2+\sigma_U^2)/2=0.0833$.
-\end{enumerate}
+%\begin{enumerate}
+%	\item Given the distribution parameters of the feature, the result of a Kolmogorov-Smirnov test on the knockoff should return a p-value close to 1.
+%	\item The mean value is between the values $\mu_L$ and $\mu_U$ such that $(\mu_L+\mu_U)/2=0.5$.
+%	\item The variance is between the values $\sigma_L^2$ and $\sigma_U^2$ such that $(\sigma_L^2+\sigma_U^2)/2=0.0833$.
+%\end{enumerate}
 
-We also set the bounds to be $\epsilon$ and $1-\epsilon$ where $\epsilon$ is very small and non-zero. We don't set the bounds to be 0 and 1 because most distributions in practical settings have an infinite domain and putting 0 or 1 into the inverse CDF would return infinitely large values.
+%We also set the bounds to be $\epsilon$ and $1-\epsilon$ where $\epsilon$ is very small and non-zero. We don't set the bounds to be 0 and 1 because most distributions in practical settings have an infinite domain and putting 0 or 1 into the inverse CDF would return infinitely large values.
 
-The next set of constraints are simply that for every value of $i,j=1,\dots,d$ where $i\ne j$, and $2\le m\le 4$ with $1\le k\le (m-1)$, we have
+The next set of constraints are simply that for every value of $i,j=1,\dots,p$ where $i\ne j$, and $2\le m\le 4$ with $1\le k\le (m-1)$, we have
 
 \begin{enumerate}
 	\item $\mu_{m,k}(\tilde{X}_i,X_j)=\mu_{m,k}(X_i,X_j)$
@@ -135,12 +162,12 @@ We are careful not to duplicate any of these constraints, for example, $\mu_{4,1
 
 \subsection{Optimizing}
 
-Now the constraints are set, we want to optimize the knockoffs such that the correlations between the features and their knockoffs are as close to zero as possible. In many circumstances, it may not be possible to generate knockoffs with zero correlation with their features as the resultant multivariate distribution $(X,\tilde{X})$ still needs to have a covariance matrix that is positive-semidefinite in order to be a valid distribution.
+Now the constraints are set, we want to optimize the knockoffs such that the correlations between the features and their knockoffs are as close to zero as possible. In many circumstances, it may not be possible to generate knockoffs with zero correlation with their features, because the resultant multivariate distribution $(X,\tilde{X})$ still needs to have a covariance matrix that is positive-semidefinite in order to be a valid distribution.
 
 For this reason, we set the minimization value to be the sum of the squared correlations between the features and their knockoffs. Formally,
 
 \begin{equation}
-\sum_{i=1}^d \left(\mu_{2,1}\left(X_i,\tilde{X}_i\right)\right)^2
+\sum_{i=1}^p \left(\mu_{2,1}\left(X_i,\tilde{X}_i\right)\right)^2
 \label{eqn:corr}
 \end{equation}
 
@@ -152,7 +179,7 @@ Since this approach is computationally expensive, we want to start as close to a
 
 In this paper, we approximate $H(\cdot)$ using the Gaussian copula:
 
-$$H(x_1,\dots,x_d)\approx C(x_1,\dots,x_d)\equiv\Phi\left(\Phi^{-1}(F_1(x_1)),\dots,\Phi^{-1}(F_d(x_d))\right)$$
+$$H(x_1,\dots,x_p)\approx C(x_1,\dots,x_p)\equiv\Phi\left(\Phi^{-1}(F_1(x_1)),\dots,\Phi^{-1}(F_p(x_p))\right)$$
 
 This approximation allows use to generate an initial guess for the knockoffs that already minimizes (\ref{eqn:corr}) somewhat while matching the covariance constraints using the formula provided in Section 3.1.1 of \citet{candes2018panning}.
 
@@ -160,27 +187,28 @@ All that remains is to set the model's tolerance, maximum iterations, and learni
 
 \section{Speed Test Results}
 
-To test the efficiency of the algorithm, we randomly generate $n$ observations for $d$ independent uniform random variables with bounds 0 and 1. We then shuffle the elements to artificially create non-zero covariance, coskewness, and cokurtosis among the variables. For variable $U_i$,
+To test the efficiency of the algorithm, we randomly generate $n$ observations for $p$ independent normal random variables with mean 0 and variance 1. We then shuffle the elements to artificially create non-zero covariance, coskewness, and cokurtosis among the variables. For variable $X_i$,
 
 \begin{itemize}
-	\item if mod$(i,4)$ equals 1, we weight smaller observations towards the end of the sample,
-	\item if mod$(i,4)$ equals 2, we weight larger observations towards the end of the sample,
-	\item if mod$(i,4)$ equals 3, we weight observations close to the mean towards the end of the sample,
-	\item if mod$(i,4)$ equals 0, the sample is left unchanged.
+	\item if mod$(i,4)=1$, we weight smaller observations towards the end of the sample,
+	\item if mod$(i,4)=2$, we weight larger observations towards the end of the sample,
+	\item if mod$(i,4)=3$, we weight observations close to the mean towards the end of the sample,
+	\item if mod$(i,4)=0$, the sample is left unchanged.
 \end{itemize}
 
-We run the algorithm using a CPU 11th Gen Intel(R) Core(TM) i7-11700F @ 2.50GHz with 16GB RAM running on Windows 11 Home 64-bit OS. $p_{KS}$ is set to be 10\%, $\mu_L$ and $\mu_U$ are set to cover three standard deviations derived from the means of the features, and $\sigma_L^2$ and $\sigma_U^2$ are set to cover three standard deviations derived from the variances of the features.
+We run the algorithm using a CPU 11th Gen Intel(R) Core(TM) i7-11700F @ 2.50GHz with 16GB RAM running on Windows 11 Home 64-bit OS.
+% $p_{KS}$ is set to be 10\%, $\mu_L$ and $\mu_U$ are set to cover three standard deviations derived from the means of the features, and $\sigma_L^2$ and $\sigma_U^2$ are set to cover three standard deviations derived from the variances of the features.
+%
+%In the case of $d=4$ and $n=100$, for example, these bounds are approximately
+%
+%\begin{itemize}
+%	\item $\mu_L = 0.442$
+%	\item $\mu_U = 0.558$
+%	\item $\sigma^2_L = 0.0517$
+%	\item $\sigma^2_U = 0.1149$
+%\end{itemize}
 
-In the case of $d=4$ and $n=100$, for example, these bounds are approximately
-
-\begin{itemize}
-	\item $\mu_L = 0.442$
-	\item $\mu_U = 0.558$
-	\item $\sigma^2_L = 0.0517$
-	\item $\sigma^2_U = 0.1149$
-\end{itemize}
-
-\subsection*{\underline{$d=4$}}
+\subsection*{\underline{$p=4$}}
 
 Tables \ref{tbl:summ2} and \ref{tbl:corr2} show how the summary statistics of the knockoffs evolve as more iterations in the knockoff construction process are performed, in addition to the correlation between each feature and its knockoff, which we want to be as close to zero possible.
 
@@ -188,117 +216,129 @@ Because of the way we construct our initial guess, these values are already very
 
 
 \begin{table}
-	
-$$\begin{array}{r | c | r r | r r | r r}
-\text{Knockoff} & \text{Iterations} & \multicolumn{2}{c |}{\text{Mean (0.5)}} & \multicolumn{2}{c |}{\text{Variance (0.083)}} & \multicolumn{2}{c}{\text{Uniform p-value}} \\
- & n= & 100 & 1000 & 100 & 1000 & 100 & 1000 \\
+	\centering
+\begin{tabular}{r | c | c c | c c | c c}
+Knockoff & Iterations & \multicolumn{2}{c |}{Mean} & \multicolumn{2}{c |}{Variance} & \multicolumn{2}{c}{Dist. p-value} \\
+ & $n=$ & 100 & 1000 & 100 & 1000 & 100 & 1000 \\
 \hline
-\tilde{U}_1 & 3 & 0.51 & 0.49 & 0.066 & 0.079 & 33.0\% & 3.4\% \\
- & 10 & 0.52 & 0.49 & 0.079 & 0.079 & 23.3\% & 9.8\% \\
- & 20 & 0.52 & 0.50 & 0.088 & 0.078 & 20.5\% & 7.0\% \\
+\hline
+$\tilde{X}_1$ & Target & -0.1258 & -0.0020 & 0.8988 & 0.9247 & 100\% & 100\% \\
+\hline
+ & 3 & -0.1200 & -0.0070 & 0.9438 & 0.9440 & 60.4\% & 42.0\% \\
+ & 10 & -0.1252 & -0.0021 & 0.9044 & 0.9244 & 98.6\% & 56.0\% \\
+ & 20 & -0.1261 & -0.0021 & 0.8995 & 0.9247 & 99.2\% & 61.1\% \\
  \hline
-\tilde{U}_2 & 3 & 0.47 & 0.50 & 0.072 & 0.082 & 15.5\% & 16.3\% \\
- & 10 & 0.48 & 0.50 & 0.080 & 0.083 & 33.6\% & 22.8\% \\
- & 20 & 0.48 & 0.50 & 0.073 & 0.083 & 41.5\% & 15.2\% \\
  \hline
-\tilde{U}_3 & 3 & 0.55 & 0.51 & 0.086 & 0.081 & 18.9\% & 2.8\% \\
- & 10 & 0.54 & 0.51 & 0.087 & 0.081 & 16.0\% & 3.7\% \\
- & 20 & 0.54 & 0.51 & 0.087 & 0.079 & 44.0\% & 2.8\% \\
+$\tilde{X}_2$ & Target & 0.0214 & -0.0529 & 0.8296 & 0.9997 & & \\
+\hline
+ & 3 & 0.0193 & -0.0534 & 0.9726 & 1.0224 & 75.8\% & 10.7\% \\
+ & 10 & 0.0212 & -0.0529 & 0.8437 & 1.0019 & 65.0\% & 6.0\% \\
+ & 20 & 0.0214 & -0.0529 & 0.8261 & 0.9995 & 76.5\% & 12.9\% \\
  \hline
-\tilde{U}_4 & 3 & 0.48 & 0.52 & 0.077 & 0.080 & 67.4\% & 4.0\% \\
- & 10 & 0.48 & 0.52 & 0.078 & 0.081 & 65.0\% & 7.6\% \\
- & 20 & 0.48 & 0.52 & 0.077 & 0.081 & 76.4\% & 5.8\% \\
-\end{array}$$
-\caption{Summary statistics for the knockoffs when $d=4$}
+ \hline
+$\tilde{X}_3$ & Target & 0.0349 & -0.0494 & 0.8706 & 1.0176 & & \\
+\hline
+ & 3 & 0.0108 & -0.0561 & 0.9544 & 1.0388 & 89.1\% & 70.3\% \\
+ & 10 & 0.0342 & -0.0494 & 0.8729 & 1.0192 & 50.1\% & 21.5\% \\
+ & 20 & 0.0348 & -0.0494 & 0.8715 & 1.0175 & 81.9\% & 30.5\% \\
+ \hline
+ \hline
+$\tilde{X}_4$ & Target & -0.0392 & 0.0327 & 0.9514 & 0.9751 & & \\
+\hline
+ & 3 & -0.0609 & 0.0309 & 1.0852 & 0.9778 & 59.2\% & 91.5\% \\
+ & 10 & -0.0398 & 0.0327 & 0.9717 & 0.9757 & 42.4\% & 93.7\% \\
+ & 20 & -0.0399 & 0.0327 & 0.9594 & 0.9751 & 35.8\% & 95.2\% \\
+\end{tabular}
+\caption{Summary statistics for the knockoffs when $p=4$}
 \label{tbl:summ2}
 \end{table}
 
 \begin{table}
-	
-$$\begin{array}{r | c | c c}
+	\centering
+\begin{tabular}{r | c | c c}
 \text{Knockoff} & \text{Iterations} & \multicolumn{2}{c}{\text{Correlation with Feature}} \\
- & n= & 100 & 1000 \\
+ & $n=$ & 100 & 1000 \\
 \hline
-\tilde{U}_1 & \text{Initial Guess} & 0.007 & -0.010 \\
- & 3 & 0.002 & 0.012 \\
- & 10 & 0.028 & 0.058 \\
- & 20 & 0.008 & 0.049 \\
+$\tilde{X}_1$ & \text{Initial Guess} & 0.047 & 0.009 \\
+ & 3 & 0.121 & 0.058 \\
+ & 10 & 0.147 & 0.058 \\
+ & 20 & 0.105 & 0.057 \\
 \hline
-\tilde{U}_2 & \text{Initial Guess} & 0.042 & 0.009 \\
- & 3 & 0.005 & 0.007 \\
- & 10 & 0.048 & 0.015 \\
- & 20 & 0.006 & 0.013 \\
+$\tilde{X}_2$ & \text{Initial Guess} & -0.105 & -0.013 \\
+ & 3 & -0.032 & 0.037 \\
+ & 10 & 0.021 & 0.078 \\
+ & 20 & 0.013 & 0.080 \\
 \hline
-\tilde{U}_3 & \text{Initial Guess} & -0.076 & -0.011 \\
- & 3 & 0.008 & -0.009 \\
- & 10 & 0.023 & -0.004 \\
- & 20 & 0.001 & 0.003 \\
+$\tilde{X}_3$ & \text{Initial Guess} & 0.022 & -0.030 \\
+ & 3 & 0.031 & -0.026 \\
+ & 10 & 0.016 & -0.023 \\
+ & 20 & 0.011 & -0.021 \\
 \hline
-\tilde{U}_4 & \text{Initial Guess} & 0.036 & 0.003 \\
- & 3 & 0.028 & 0.005 \\
- & 10 & 0.005 & 0.008 \\
- & 20 & -0.004 & 0.004 \\
-\end{array}$$
-\caption{Correlation of each feature and its knockoff when $d=4$}
+$\tilde{X}_4$ & \text{Initial Guess} & -0.026 & -0.009 \\
+ & 3 & 0.036 & -0.013 \\
+ & 10 & 0.228 & -0.015 \\
+ & 20 & 0.185 & -0.013 \\
+\end{tabular}
+\caption{Correlation of each feature and its knockoff when $p=4$}
 \label{tbl:corr2}
 \end{table}
 
 \begin{figure}[h!]
   \centering
-   \includegraphics[width=0.33\linewidth]{Graph_2_2_1.png}
-   \caption{Evolution of \underline{correlation} constraint adherence over 20 iterations, $d=4$, $n=100$} 
+   \includegraphics[width=0.33\linewidth]{Graph03_2_2_1.png}
+   \caption{Evolution of \underline{correlation} constraint adherence over 20 iterations, $p=4$, $n=100$} 
    \label{fig:22corr}
 \end{figure}
 
 \begin{figure}[h!]
   \centering
-   \includegraphics[width=0.67\linewidth]{Graph_2_2_2.png}
-   \caption{Evolution of \underline{coskewness} constraint adherence over 20 iterations, $d=4$, $n=100$} 
+   \includegraphics[width=0.67\linewidth]{Graph03_2_2_2.png}
+   \caption{Evolution of \underline{coskewness} constraint adherence over 20 iterations, $p=4$, $n=100$} 
    \label{fig:22cosk}
 \end{figure}
 
 \begin{figure}[h!]
   \centering
-   \includegraphics[width=\linewidth]{Graph_2_2_3.png}
-   \caption{Evolution of \underline{cokurtosis} constraint adherence over 20 iterations, $d=4$, $n=100$} 
+   \includegraphics[width=\linewidth]{Graph03_2_2_3.png}
+   \caption{Evolution of \underline{cokurtosis} constraint adherence over 20 iterations, $p=4$, $n=100$} 
    \label{fig:22coku}
 \end{figure}
 
 With four features, we have six relationships whose knockoff moments need to match those of their features. Figures \ref{fig:22corr}, \ref{fig:22cosk}, and \ref{fig:22coku} show the six relationships across the six moments of interest: correlation, left and right coskewness, and left, central, and right cokurtosis, and their evolution as we perform additional iterations in the optimization process. 
 
-Each colour represents a different relationship, for example, black shows the relationship between $U_1$ \& $U_2$, $\tilde{U}_1$ \& $U_2$, $U_1$ \& $\tilde{U}_2$, and $\tilde{U}_1$ \& $\tilde{U}_2$. The dotted line shows the real value of the relationship and therefore the target value of the constraint. The two solid lines show the value of the moment between a feature and a knockoff, while the dashed line shows the value of the moment between the two knockoffs.
+Each colour represents a different relationship, for example, black shows the relationship between the first and second features, while green shows the relationship between the second and third features. The dotted line shows the real value of the relationship and therefore the target value of the constraint. The two solid lines show the value of the moment between one of the features and the knockoff of the other feature, while the dashed line shows the value of the moment between the two knockoffs.
 
 We can see that the optimization process is reaching the target moments quickly and precisely with this small dataset so we can be confident that the technique is working and producing close to pseudo-perfect knockoffs.
 
-Figure \ref{fig:coku_conv} shows that if we increase the number of features, we see some degradation in the speed with which the constraints converge. In this context, it's important to note that going from 4 features to 8 increases the number of relationships from 6 to 28. In the current code, all of the cokurtosis constraints, for example, are one constraint. The same is true for coskewness and correlation. This is to make the code as computationally efficient as possible, however, we could make the constraints for left coskewness and right coskewness separate constraints to make them converge sooner. The question is whether the increase in speed of convergence is adequately balanced with the loss of computational efficiency. In Subfigures \ref{fig:coku_22} and \ref{fig:coku_23}, we show all the relationships. In \ref{fig:coku_32} and \ref{fig:coku_33}, we just show the quintiles for the sake of readability.
+Figure \ref{fig:coku_conv} shows that if we increase the number of features, we see some degradation in the speed with which the constraints converge. In this context, it's important to note that going from 4 features to 8 increases the number of relationships from 6 to 28. In the current code, all of the cokurtosis constraints, for example, are entered into the model as a single constraint. The same is true for coskewness and correlation. This is to make the code as computationally efficient as possible, however, we could make the constraints for left coskewness and right coskewness separate constraints to make them converge sooner. The question is whether the increase in speed of convergence is adequately balanced with the loss of computational efficiency. In Subfigures \ref{fig:coku_22} and \ref{fig:coku_23}, where $p=4$, we show all the relationships. In \ref{fig:coku_32} and \ref{fig:coku_33}, where $p=8$, we just show the quintiles for the sake of readability.
 
 \begin{figure}[h!]
 	\centering
 	\begin{subfigure}{0.66\linewidth}
-		\includegraphics[width=\linewidth]{Graph_2_2_2.png}
-		\caption{Coskewness Constraint, $d=4$, $n=100$}
+		\includegraphics[width=\linewidth]{Graph03_2_2_2.png}
+		\caption{Coskewness Constraint, $p=4$, $n=100$}
 		\label{fig:coku_22}
 	\end{subfigure}
 	\begin{subfigure}{0.66\linewidth}
-		\includegraphics[width=\linewidth]{Graph_2_3_2.png}
-		\caption{Coskewness Constraint, $d=4$, $n=1000$}
+		\includegraphics[width=\linewidth]{Graph03_2_3_2.png}
+		\caption{Coskewness Constraint, $p=4$, $n=1000$}
 		\label{fig:coku_23}
 	\end{subfigure}
 	\begin{subfigure}{0.66\linewidth}
-		\includegraphics[width=\linewidth]{Graph_3_2_2.png}
-		\caption{Coskewness Constraint, $d=8$, $n=100$}
+		\includegraphics[width=\linewidth]{Graph03_3_2_2.png}
+		\caption{Coskewness Constraint, $p=8$, $n=100$}
 		\label{fig:coku_32}
 	\end{subfigure}
 	\begin{subfigure}{0.66\linewidth}
-		\includegraphics[width=\linewidth]{Graph_3_3_2.png}
-		\caption{Coskewness Constraint, $d=8$, $n=1000$}
+		\includegraphics[width=\linewidth]{Graph03_3_3_2.png}
+		\caption{Coskewness Constraint, $p=8$, $n=1000$}
 		\label{fig:coku_33}
 	\end{subfigure}
 	\caption{Constraint convergence with increasing numbers of features and observations} 
 	\label{fig:coku_conv}
 \end{figure}
 
-In terms of speed, Table \ref{tbl:time} shows how long each optimization process took. The code is already optimized to scale well with the number of features, $d$. We hope to find additional efficiency savings for the total number of observations.
+In terms of speed, Table \ref{tbl:time} shows how long each optimization process took. The code is already optimized to scale well with the number of features, $p$. We hope to find additional efficiency savings for the total number of observations.
 
 \begin{table}
 	\begin{center}
@@ -306,18 +346,37 @@ In terms of speed, Table \ref{tbl:time} shows how long each optimization process
 	\begin{tabular}{r r r | c c c}
 		\multicolumn{3}{c |}{Total Observations} & \multicolumn{3}{c}{Iterations} \\
 		\hline
-		$n$ & $d$ & $n\times d$ & 3 & 10 & 20 \\
+		$n$ & $p$ & $n\times p$ & 3 & 10 & 20 \\
 		\hline
-		100 & 4 & 400 & 00:00:09 & 00:00:24 & 00:00:45 \\
-		 & 8 & 800 & 00:00:32 & 00:01:32 & 00:02:56 \\
+		100 & 4 & 400 & 0:00:07 & 0:00:13 & 0:00:26 \\
+		 & 8 & 800 & 0:00:26 & 0:00:52 & 0:01:27 \\
 		 \hline
-		1000 & 4 & 4000 & 00:08:36 & 00:37:45 & 01:19:17 \\
-		 & 8 & 8000 & 01:56:39 & 16:00:54 & 31:53:58 \\
+		1000 & 4 & 4000 & 0:01:37 & 0:06:21 & 0:12:40 \\
+		 & 8 & 8000 & 0:10:03 & 0:41:37 & 1:26:15 \\
 	\end{tabular}
 	\end{center}
 	\caption{Time taken to complete optimization for a set number of iterations in H:M:S}
 	\label{tbl:time}
 \end{table}
+
+%\begin{table}
+%\begin{center}
+%	
+%	\begin{tabular}{r r r | c c c}
+%		\multicolumn{3}{c |}{Total Observations} & \multicolumn{3}{c}{Iterations} \\
+%		\hline
+%		$n$ & $d$ & $n\times d$ & 3 & 10 & 20 \\
+%		\hline
+%		100 & 4 & 400 & 00:00:09 & 00:00:24 & 00:00:45 \\
+%		& 8 & 800 & 00:00:32 & 00:01:32 & 00:02:56 \\
+%		\hline
+%		1000 & 4 & 4000 & 00:08:36 & 00:37:45 & 01:19:17 \\
+%		& 8 & 8000 & 01:56:39 & 16:00:54 & 31:53:58 \\
+%	\end{tabular}
+%\end{center}
+%\caption{Time taken to complete optimization for a set number of iterations in H:M:S}
+%\label{tbl:uni_time}
+%\end{table}
 
 
 
@@ -381,7 +440,137 @@ In terms of speed, Table \ref{tbl:time} shows how long each optimization process
 
 \section{Real Data Results}
 
-To test the effectiveness of this approach on real data, we use daily returns from constituents of the Swiss Market Index (SMI) 
+To test the effectiveness of this approach on real data, we use daily returns from the constituents of the Swiss Market Index (SMI) from the 26th May 2017 until the 8th April 2019. This is 481 observations from 20 features.
+
+The daily returns of these 20 stocks are scaled to have mean 0 and variance 1 and the scaled dataset is fit to a Gaussian copula. All univariate variables are modelled as Student-t distributions for which the degrees of freedom range from 3.08 to 5.81.
+
+Using the copula, we generate the initial guess and perform the optimisation procedure as outlined in Section 3. Since there are 20 features, we have 190 relationships and 1140 moment-based constraints. Table \ref{table:realcons} shows the aggregated constraints over a given number of iterations. The target for each constraint is zero.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{r | c | r}
+Moment & Iterations & Constraint Value \\
+\hline
+Correlation & Initial Guess & 0.825 \\
+& 20 & 0.049 \\
+& 100 & 0.006 \\
+\hline
+Coskewness & Initial Guess & 38.106 \\
+& 20 & 1.031 \\
+& 100 & 0.090 \\
+\hline
+Cokurtosis & Initial Guess & 1692.465 \\
+& 20 & 22.992 \\
+& 100 & 1.757 \\
+\end{tabular}
+\caption{Evolution of constraint values where 0 is the target}
+\label{table:realcons}
+\end{table}
+
+The time to complete 100 iterations was 13:37:27. The goal of the procedure is to produce knockoffs whose correlations with their features are as close to zero as possible whilst adhering to the moment constraints, and Table \ref{table:corrs} shows the quartiles of the correlations achieved.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{r | c c c c c}
+Quartile & Min & 0.25 & 0.5 & 0.75 & Max \\
+\hline
+Correlation & 0.36 & 0.51 & 0.60 & 0.71 & 0.92
+\end{tabular}
+\caption{Minimization results for correlation between knockoffs and features}
+\label{table:corrs}
+\end{table} 
+
+ Table  shows the results for Lonza and UBS, which got the lowest and highest resultant correlations respectively, as well as Nestle, which is a big company that is representative of the middle of the distribution. 
+ 
+ \begin{table}
+ \centering
+ \begin{tabular}{r | c c}
+ Stock & Dist. p-value & Correlation \\
+ \hline
+ Lonza & 41.5\% & 0.357 \\
+ Nestle & 89.5\% & 0.527 \\
+ UBS & 52.0\% & 0.919 \\
+ \end{tabular}
+ \caption{Fit of the knockoffs to the right univariate distributions and their correlation with their features}
+ \label{table:fit}
+ \end{table}
+ 
+ \begin{table}
+ \centering
+ \begin{tabular}{r r | c c c | c c c}
+ & &  \multicolumn{3}{c |}{Nestle} & \multicolumn{3}{c}{UBS} \\
+ & & Real & Feature & Knockoff & Real & Feature & Knockoff \\
+ \hline
+ Lonza & Correlation & 0.364 & 0.366 & 0.365 & 0.424 & 0.424 & 0.424 \\
+ \hline
+ & Left Coskewness & -0.030 & -0.026 & -0.030 & -0.122 & -0.122 & -0.120 \\
+ & Right Coskewness & -0.155 & -0.157 & -0.157 & -0.273 & -0.274 & -0.275 \\
+ \hline
+ & Left Cokurtosis & 1.181 & 1.178 & 1.179 & 1.642 & 1.643 & 1.643 \\
+ & Central Cokurtosis & 1.579 & 1.577 & 1.574 & 1.871 & 1.872 & 1.875 \\
+ & Right Cokurtosis & 1.417 & 1.432 & 1.420 & 1.811 & 1.805 & 1.807 \\
+ \hline
+ \hline
+ Nestle & Correlation & & & & 0.337 & 0.336 & 0.336 \\
+ \hline
+ & Left Coskewness & & & & -0.136 & -0.134 & -0.136 \\
+ & Right Coskewness & & & & -0.233 & -0.237 & -0.236 \\
+ \hline
+ & Left Cokurtosis & & & & 1.599 & 1.596 & 1.605 \\
+ & Central Cokurtosis & & & & 1.793 & 1.796 & 1.786 \\
+ & Right Cokurtosis & & & & 1.437 & 1.434 & 1.444 \\
+ \end{tabular}
+ \label{table:lonn}
+ \end{table}
+ 
+ \section{Discussion}
+ 
+ If one uses mean absolute correlation in order to determine the ``quality" of a knockoff, then it seems that this algorithm is indeed capable of generating ``perfect" knockoffs. The question is how much time is required in order to generate them.
+ 
+ By using the Gaussian copula to estimate the multivariate distribution of the features, we're able to generate an initial guess for the model in a matter of seconds that not only gives us knockoffs whose distributions already match those of the features, but also already satisfy to some extent the correlation requirements of good-quality knockoffs. 
+ 
+ With this initial guess, the minimization algorithm doesn't need to run for that many iterations in order align the knockoffs with correct multivariate distribution as well as the constraints of the higher-order moments: namely coskewness and cokurtosis.
+ 
+ As an initial step, this is a very promising technique for generating Model-X knockoffs, but the nature of the optimization algorithm suggests that there is lots of scope to significantly improve the computation cost of this approach, thereby significantly increasing the accessibility to ``perfect" knockoffs for a wider range of problems.
+ 
+ 
+%
+% ABBN & 0.553 & 0.552 & 0.551 & -0.302 & -0.304 & -0.304 & -0.200 & -0.199 &
+% ADEN & 0.471 & 0.473 & 0.474 & -0.282 & -0.277 & -0.278 & -0.099 & -0.106 & 
+% BAER & 0.416 & 0.417 & 0.416 & -0.198 & -0.198 & -0.197 & -0.096 & 
+% CFR & 0.426 & 0.426 & 0.426 & -0.102 & -0.103 & -0.101 &
+% CSGN & 0.270 & 0.271 & 0.271 & -0.163 & -0.174 & -0.162 &
+% GEBN & 0.394 & 0.380 & 0.394 & -0.063 & 0.002 & -0.058 &
+% GIVN & 0.401 & 0.401 & 0.402 & -0.124 & -0.124 & -0.128 &
+% HOLN & 0.437 & 0.439 & 0.436 & -0.083 & -0.094 & -0.083 &
+% LONN & 1 & 0.357 & 1 & 0.024 & -0.101 & -0.244 &
+% NESN & 0.364 & 0.366 & 0.365 & -0.155 & -0.157 & -0.157 &
+% NOVN & 0.533 & 0.533 & 0.532 & -0.051 & -0.053 & -0.049 &
+% ROG & 0.448 & 0.447 & 0.445 & -0.038 & -0.025 & -0.039 &
+% SCMN & 0.357 & 0.359 & 0.358 & 0.021 & 0.010 & 0.024 &
+% SGSN & 0.527 & 0.529 & 0.526 & -0.246 & -0.242 & -0.245 &
+% SIKA & 0.414 & 0.419 & 0.416 & -0.166 & -0.155 & -0.170 &
+% SLHN & 0.431 & 0.431 & 0.433 & -0.145 & -0.147 & -0.149 &
+% SREN & 0.350 & 0.349 & 0.350 & -0.243 & -0.242 & -0.245 &
+% UBSG & 0.424 & 0.424 & 0.424 & -0.273 & -0.274 & -0.275 &
+% UHR & 0.407 & 0.409 & 0.408 & -0.077 & -0.077 & -0.077 &
+% ZURN & 0.408 & 0.407 & 0.407 & -0.195 & -0.194 & -0.197 &
+
+%\begin{tabular}{r r r r r r r}
+%Moment & Stock 1 & Stock 2 & Target & Initial Guess & It. 20 & It. 200 \\
+%Correlation & \\
+%\end{tabular}
+%
+%\begin{tabular}{r | c | c | c | c | c | c | c | c | c | c }
+% & \multicolumn{2}{c}{CSGN} & \multicolumn{2}{c}{NESN} & \multicolumn{2}{c}{ZURN} & \multicolumn{2}{c}{CSGN KO} & \multicolumn{2}{c}{NESN KO} \\
+% \hline
+% NESN & \multicolumn{2}{c |}{0.11} & \multicolumn{2}{c}{} & \multicolumn{2}{c}{}  &\multicolumn{2}{c}{} & \multicolumn{2}{c}{}  \\
+% ZURN & \multicolumn{2}{c |}{0.28} & \multicolumn{2}{c |}{0.41} & \multicolumn{2}{c}{}  & \multicolumn{2}{c}{}  & \multicolumn{2}{c}{}   \\
+% \hline
+% CSGN KO & 0.18 & 0.26 & 0.03 & 0.04 & 0.32 & 0.31 & \multicolumn{2}{c}{}  & \multicolumn{2}{c}{}   \\
+% NESN KO & 0.04 & 0.09 & 0.32 & 0.38 & 0.39 & 0.44 & -0.01 & 0.05  & \multicolumn{2}{c}{}  \\
+% ZURN KO & 0.30 & 0.26 & 0.41 & 0.37 & 0.96 & 0.83 & 0.31 & 0.26 & 0.38 & 0.41 \\
+% \end{tabular}
 
 
 
