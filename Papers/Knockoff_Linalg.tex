@@ -90,19 +90,35 @@ The authors' solution was the introduction of Model-X Knockoffs – a set of ran
 
 Note that as long as $\tilde{X}$ is constructed without knowledge of $Y$, condition 2 is automatically satisfied.
 
-\citet{candes2018panning} test this methodology by replicating , who identify gene clusters that predict the development of Crohn's disease in patients. Whereas the original study was able to identify 9 gene clusters, by implementing the Model-X Knockoff methodology, \citet{candes2018panning} was able to identify 18 gene clusters.
+\citet{candes2018panning} test this methodology by replicating \citet{wellcome2007genome}, who identify gene clusters that predict the development of Crohn's disease in patients. Whereas the original study was able to identify 9 gene clusters, by implementing the Model-X Knockoff methodology, \citet{candes2018panning} was able to identify 18 gene clusters.
 
-Since then, several steps have been taken to improve the methodology. For example, \citet{bates2021metropolized} add implementation of the Metropolis-Hastings algorithm (\citet{metropolis1953equation}, \citet{hastings1970monte}) which, although more computationally expensive, improves the ``quality" of the knockoffs as measured by the mean absolute correlation between the knockoffs and their features.
+Since then, several steps have been taken to improve the methodology. For example, \citet{bates2021metropolized} add implementation of the Metropolis-Hastings (MH) algorithm (\citet{metropolis1953equation}, \citet{hastings1970monte}) which, although more computationally expensive, improves the ``quality" of the knockoffs as measured by the mean absolute correlation between the knockoffs and their features. The key insight with regard to adding the MH algorithm to the construction process is that it's a Markov chain method that is time-reversible, and therefore mimics the condition that features and knockoffs are able to be swapped without affecting the distribution.
 
 The one element that connects every approach to generating knockoffs since the 2018 paper is the focus on deriving the correct conditional distribution from which to sample the knockoffs. But is this a necessary step?
 
-In every case we start with a $p\times n$ matrix and our goal is to generate another $p\times n$ matrix that fulfils a number of linear constraints. Hence, it is possible to reframe this problem not as deriving the correct conditional distribution from which to sample, but a linear algebra optimization problem subject to a series of linear constraints.
+In every case we start with a $p\times n$ matrix and our goal is to generate another $p\times n$ matrix that fulfils a number of linear constraints. Hence, it is possible to reframe this problem not as deriving the correct conditional distribution from which to sample, but a linear algebra optimization problem subject to a series of linear constraints. If we can ensure that the univariate distributions of the knockoffs match those of the features, which is trivial, and that the main co-moments between all the features and knockoffs match up, then for a relevant subset of multivariate distributions, we will have constructed the best possible knockoffs for that distribution.
+
+This process, however, is computationally very expensive, so one of the main aspects of this paper is a discussion on methods to reduce the computation time as much as possible while still ensuring pseudo-perfect knockoffs.
 
 In this paper, section 2 summarizes the literature on knockoff construction to date; section 3 outlines how to frame the problem using linear algebra; section 4 tests the methodology on a set of artificially generated random variables with enforced non-zero values of coskewness and cokurtosis; section 5 tests the methodology on a real dataset that in particular presents a serious challenge to the knockoff generation procedure in general; section 6 concludes the paper.
 
 \section{Literature Review}
 
-In addition to the initial algorithms put forth by \citet{candes2018panning}, a wide range of knockoff-generating methods have been developed, especially since 2021.
+In addition to the initial knockoff construction algorithms put forth by \citet{candes2018panning} and \cite{bates2021metropolized}, a wide range of other knockoff-generating methods have been developed. For example, \citet{romano2020deep} use deep generative models to sample knockoffs using a criterion measuring the validity of the knockoffs produced by the model.
+
+\citet{berti2023new} use copulas to generate knockoffs. Essentially, if the distribution of the $p$ features is $F(x_1,\dots,x_p)$, then, by Sklar's Theorem (\citet{sklar1959fonctions}) there exists a $p$-copula $C$ and univariate distributions $F_1,\dots,F_p$ such that
+
+$$F(x_1,\dots,x_p)=C\left[F_1(x_1),\dots,F_p(x_p)\right],\, \forall x_1,\dots,x_p$$
+
+By carefully selecting a set of 2-copulas $D_1,\dots,D_p$, a new distribution can be created
+
+$$H(x_1,\dots,x_p,x_{p+1},\dots,x_{2p})=C\left[D_1\left(F_1(x_1),F_1(x_{p+1})\right),\dots,D_p\left(F_p(x_p),F_p(x_{2p})\right)\right]$$
+
+from which knockoffs can be constructed.
+
+\citet{kurz2022vine} also look at copulas but vine copulas. They use this method because it's especially strong for high-dimensionally modelling. However, unlike the method in \citet{berti2023new} that samples all the knockoffs at once, they generate the knockoffs recursively, like in \citet{candes2018panning} and \cite{bates2021metropolized}.
+
+Since the knockoff construction algorithm is typically random, \citet{ren2023derandomizing} introduce a method for derandomizing the procedure and making it more stable by constructing multiple sets of knockoffs and aggregating the results.
 
 
 
@@ -126,7 +142,7 @@ In addition to the initial algorithms put forth by \citet{candes2018panning}, a 
 
 \section{Methodology}
 
-Suppose we have a multivariate distribution $$H(x_1,\dots,x_p)=Pr(X_1\le x_1,\dots,X_p\le x_p)$$ where the cumulative distribution function (CDF) of $X_i$ is $F_i:\mathbb{R}\rightarrow [0,1]$. Suppose also that we have a sample of this distribution with $n$ observations. Our goal is to use a linear algebra optimization approach to construct perfect Model-X knockoffs. That is, if the original sample is $\mathcal{X}\equiv(X_1,\dots,X_p)\in \mathbb{R}^{p\times n}$, then we want to find a matrix $\tilde{\mathcal{X}}\equiv(\tilde{X}_1,\dots,\tilde{X}_p)\in \mathbb{R}^{p\times n}$ such that the statistical moments of each feature and the other features are equal to the statistical moments of that feature's knockoff and the other features, as well as between that feature's knockoff and the other features' knockoffs, while minimizing the absolute value of the correlation between each feature and its knockoff.
+Suppose we have a multivariate distribution $$F(x_1,\dots,x_p)=Pr(X_1\le x_1,\dots,X_p\le x_p)$$ where the cumulative distribution function (CDF) of $X_i$ is $F_i:\mathbb{R}\rightarrow [0,1]$. Suppose also that we have a sample of this distribution with $n$ observations. Our goal is to use a linear algebra optimization approach to construct perfect Model-X knockoffs. That is, if the original sample is $\mathcal{X}\equiv(X_1,\dots,X_p)\in \mathbb{R}^{p\times n}$, then we want to find a matrix $\tilde{\mathcal{X}}\equiv(\tilde{X}_1,\dots,\tilde{X}_p)\in \mathbb{R}^{p\times n}$ such that the statistical moments of each feature and the other features are equal to the statistical moments of that feature's knockoff and the other features, as well as between that feature's knockoff and the other features' knockoffs, while minimizing the absolute value of the correlation between each feature and its knockoff.
 
 We focus on equating up to the fourth statistical moment: correlation, coskewness, and cokurtosis. To understand our approach, you have to know that generating knockoffs using linear algebra is disproportionately computationally expensive compared to sampling from a distribution and, as a result, our methodology concentrates on minimizing the amount of work a computer needs to do.
 
@@ -177,9 +193,9 @@ By performing the minimization in this way, we trend all the values to zero whil
 
 Since this approach is computationally expensive, we want to start as close to a viable solution as possible before running the optimization. That way, if a single iteration of the optimization takes an excessively long time, we can reduce the parameter indicating the maximum number of iterations and be comfortable that we started with something approximating a viable knockoff.
 
-In this paper, we approximate $H(\cdot)$ using the Gaussian copula:
+In this paper, we approximate $F(\cdot)$ using the Gaussian copula:
 
-$$H(x_1,\dots,x_p)\approx C(x_1,\dots,x_p)\equiv\Phi\left(\Phi^{-1}(F_1(x_1)),\dots,\Phi^{-1}(F_p(x_p))\right)$$
+$$F(x_1,\dots,x_p)\approx C(x_1,\dots,x_p)\equiv\Phi\left(\Phi^{-1}(F_1(x_1)),\dots,\Phi^{-1}(F_p(x_p))\right)$$
 
 This approximation allows use to generate an initial guess for the knockoffs that already minimizes (\ref{eqn:corr}) somewhat while matching the covariance constraints using the formula provided in Section 3.1.1 of \citet{candes2018panning}.
 
