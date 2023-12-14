@@ -469,72 +469,75 @@ Moment & Iterations & Constraint Value \\
 \hline
 Correlation & Initial Guess & 0.825 \\
 & 20 & 0.049 \\
+& 50 & 0.007 \\
 & 100 & 0.006 \\
 \hline
 Coskewness & Initial Guess & 38.106 \\
 & 20 & 1.031 \\
+& 50 & 0.117 \\
 & 100 & 0.090 \\
 \hline
 Cokurtosis & Initial Guess & 1692.465 \\
 & 20 & 22.992 \\
+& 50 & 2.477 \\
 & 100 & 1.757 \\
 \end{tabular}
 \caption{Evolution of constraint values where 0 is the target}
 \label{table:realcons}
 \end{table}
 
-The time to complete 100 iterations was 13:37:27. The goal of the procedure is to produce knockoffs whose correlations with their features are as close to zero as possible whilst adhering to the moment constraints, and Table \ref{table:corrs} shows the quartiles of the correlations achieved.
+The time to complete 50 iterations was 6:45:56. The goal of the procedure is to produce knockoffs whose correlations with their features are as close to zero as possible whilst adhering to the moment constraints, and Table \ref{table:corrs} shows the quartiles of the correlations achieved.
 
 \begin{table}[h!]
 \centering
 \begin{tabular}{r | c c c c c}
 Quartile & Min & 0.25 & 0.5 & 0.75 & Max \\
 \hline
-Correlation & 0.36 & 0.51 & 0.60 & 0.71 & 0.92
+Correlation & 0.27 & 0.47 & 0.56 & 0.69 & 0.88
 \end{tabular}
 \caption{Minimization results for correlation between knockoffs and features}
 \label{table:corrs}
 \end{table} 
 
- Table  shows the results for Lonza and UBS, which got the lowest and highest resultant correlations respectively, as well as Nestle, which is a big company that is representative of the middle of the distribution. 
+ Table  shows the results for Credit Suisse and UBS, which got the lowest and highest resultant correlations respectively, as well as Roche, which is a big company that is representative of the middle of the distribution with a correlation of 0.54.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{r | c c c c c}
+Quartile & Min & 0.25 & 0.5 & 0.75 & Max \\
+\hline
+Feature KS p-value & 0.35 & 0.58 & 0.64 & 0.72 & 0.96 \\
+Initial Guess KS p-value & 0.02 & 0.34 & 0.54 & 0.81 & 0.98 \\
+Knockoff KS p-value & 0.02 & 0.45 & 0.80 & 0.87 & 0.98 \\
+\end{tabular}
+\caption{Adherence of univariate distribution constraints}
+\label{table:ks}
+\end{table} 
  
  \begin{table}
  \centering
- \begin{tabular}{r | c c}
- Stock & Dist. p-value & Correlation \\
- \hline
- Lonza & 41.5\% & 0.357 \\
- Nestle & 89.5\% & 0.527 \\
- UBS & 52.0\% & 0.919 \\
- \end{tabular}
- \caption{Fit of the knockoffs to the right univariate distributions and their correlation with their features}
- \label{table:fit}
- \end{table}
- 
- \begin{table}
- \centering
- \begin{tabular}{r r | c c c | c c c}
- & &  \multicolumn{3}{c |}{Nestle} & \multicolumn{3}{c}{UBS} \\
+ \begin{tabular}{r r | c | c c || c | c c}
+ & &  \multicolumn{3}{c |}{Roche} & \multicolumn{3}{c}{UBS} \\
  & & Real & Feature & Knockoff & Real & Feature & Knockoff \\
  \hline
- Lonza & Correlation & 0.364 & 0.366 & 0.365 & 0.424 & 0.424 & 0.424 \\
+ Credit Suisse & Correlation & 0.190 & 0.191 & 0.190 & 0.625 & 0.618 & 0.618 \\
  \hline
- & Left Coskewness & -0.030 & -0.026 & -0.030 & -0.122 & -0.122 & -0.120 \\
- & Right Coskewness & -0.155 & -0.157 & -0.157 & -0.273 & -0.274 & -0.275 \\
+ & Left Coskewness & -0.128 & -0.135 & -0.141 & -0.283 & -0.282 & -0.269 \\
+ & Right Coskewness & -0.130 & -0.123 & -0.135 & -0.131 & -0.141 & -0.135 \\
  \hline
- & Left Cokurtosis & 1.181 & 1.178 & 1.179 & 1.642 & 1.643 & 1.643 \\
- & Central Cokurtosis & 1.579 & 1.577 & 1.574 & 1.871 & 1.872 & 1.875 \\
- & Right Cokurtosis & 1.417 & 1.432 & 1.420 & 1.811 & 1.805 & 1.807 \\
+ & Left Cokurtosis & 1.055 & 0.996 & 1.050 & 2.635 & 2.574 & 2.661 \\
+ & Central Cokurtosis & 1.491 & 1.509 & 1.493 & 2.369 & 2.298 & 2.338 \\
+ & Right Cokurtosis & 1.549 & 1.533 & 1.549 & 2.349 & 2.423 & 2.367 \\
  \hline
  \hline
- Nestle & Correlation & & & & 0.337 & 0.336 & 0.336 \\
+ Roche & Correlation & & & & 0.337 & 0.331 & 0.333 \\
  \hline
- & Left Coskewness & & & & -0.136 & -0.134 & -0.136 \\
- & Right Coskewness & & & & -0.233 & -0.237 & -0.236 \\
+ & Left Coskewness & & & & -0.056 & -0.045 & -0.050 \\
+ & Right Coskewness & & & & -0.108 & -0.099 & -0.111 \\
  \hline
- & Left Cokurtosis & & & & 1.599 & 1.596 & 1.605 \\
- & Central Cokurtosis & & & & 1.793 & 1.796 & 1.786 \\
- & Right Cokurtosis & & & & 1.437 & 1.434 & 1.444 \\
+ & Left Cokurtosis & & & & 1.504 & 1.588 & 1.522 \\
+ & Central Cokurtosis & & & & 1.744 & 1.729 & 1.733 \\
+ & Right Cokurtosis & & & & 1.558 & 1.570 & 1.585 \\
  \end{tabular}
  \label{table:lonn}
  \end{table}
