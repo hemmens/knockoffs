@@ -11,6 +11,8 @@ from scipy.stats import kstest, beta, gamma, norm, truncnorm, t, \
                         uniform, loglaplace, multivariate_normal#, skew, kurtosis
 from scipy.optimize import minimize, NonlinearConstraint
 
+# All the possible univariate distributions for the individual features
+
 candidates = {'BetaUnivariate': {'str': 'beta', 'fn': beta},
               'GammaUnivariate': {'str': 'gamma', 'fn': gamma},
               'GaussianUnivariate': {'str': 'norm', 'fn': norm},
@@ -18,6 +20,9 @@ candidates = {'BetaUnivariate': {'str': 'beta', 'fn': beta},
               'StudentTUnivariate': {'str': 't', 'fn': t},
               'UniformUnivariate': {'str': 'uniform', 'fn': uniform},
               'LogLaplace': {'str': 'loglaplace', 'fn': loglaplace}}
+
+# Calculate the coskewness matrix between all n random variables of length p in an nxp matrix, m.
+# Coskewness can be right- or left-handed.
 
 def coskew(m, how='left') :
     X = m.copy()
@@ -33,6 +38,9 @@ def coskew(m, how='left') :
         output = np.dot((X**2).T,Y)
     
     return output/n
+
+# Calculate the cokurtosis matrix between all n random variables of length p in an nxp matrix, m.
+# Cokurtosis can be right-, center-, or left-handed.
     
 def cokurt(m, how='center') :
     X = m.copy()
@@ -51,6 +59,9 @@ def cokurt(m, how='center') :
     
     return output/n
 
+# Return the score of the co-moment constraint value for the pseudo-perfect knockoff optimisation algorithm
+# where 0 indicates a perfect adherence to the co-moment constraint
+
 def get_con_value(m, feature, to_zero='triangle') :
     x = m.copy()
     x -= feature
@@ -63,6 +74,8 @@ def get_con_value(m, feature, to_zero='triangle') :
     
     return np.sum(x)
 
+# Return the mean value constraints for the individual features
+
 def is_mean(x, feature) :
     p = feature.shape[0]
     n = x.shape[0] // p
@@ -73,6 +86,8 @@ def is_mean(x, feature) :
     xc = xc**2
         
     return sum(xc)
+  
+# Return the variance value constraints for the individual features
 
 def is_var(x, feature) :
     p = feature.shape[0]
@@ -84,6 +99,8 @@ def is_var(x, feature) :
     xc = xc**2
         
     return sum(xc)
+  
+# Return the Kolmogorov-Smirnov value constraints for the individual features
 
 def is_distributed(x, dists) :
     p = len(dists)
@@ -105,6 +122,8 @@ def is_distributed(x, dists) :
         
     return sum(xc)/p
 
+# Return the total correlation match between the features and knockoffs, and between all the knockoffs
+
 def corr_match(x, feature) :
     n, p = feature.shape
     xc = x.copy()
@@ -119,6 +138,8 @@ def corr_match(x, feature) :
     knockoff = get_con_value(knockoff, real, 'triangle')
     
     return (corr + knockoff)
+  
+# Return the total coskewness match between the features and knockoffs, and between all the knockoffs
 
 def cosk_match(x,feature) :
     n, p = feature.shape
@@ -136,6 +157,8 @@ def cosk_match(x,feature) :
     knockoff = get_con_value(knockoff, real, 'diag')
                 
     return (lcosk + rcosk + knockoff)
+  
+# Return the total cokurtosis match between the features and knockoffs, and between all the knockoffs
 
 def coku_match(x,feature) :
     n, p = feature.shape
@@ -165,13 +188,19 @@ def coku_match(x,feature) :
                 
     return (ccoku + lcoku + rcoku + knockoff_c + knockoff)
 
+# Minimise the value of the eigenvalues when constructing the Candès knockoffs in the optimisation algorithm
+
 def get_cov_min_eigval(x, covs_inv) :
     x_diag = np.diag(x)
     covs_t = np.dot(x_diag, np.dot(covs_inv, x_diag))
     return min(np.linalg.eigvals(2*x_diag - covs_t))
 
+# Return the summed squared correlations between the features and their knockoffs
+
 def get_diag_weights(x, vs) :
     return sum([y**2 for y in vs-x])
+
+# Get the estimated Candès knockoffs assuming a Normal multivariate distribution
 
 def get_candes(feature, dists) :
     x = feature.copy()
