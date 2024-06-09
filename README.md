@@ -10,6 +10,8 @@ and a comparison with the Metropolized Sampling algorithm presented by Bates, Ca
 
 MH_Compare/t_core.py is available to ensure t_hemmens.py runs correctly. The original file can be found at the following link: https://github.com/wenshuow/metro/blob/f2c0b5c2eaf64d8759ab651d5aff4a787bcd9ae3/heavy-tailed-t/t_core.py
 
+All examples use the module knockoff_lib2.py.
+
 Correspondence should be addressed to Christopher Hemmens (chris [at] christopherhemmens [dot] com).
 
 Reference
