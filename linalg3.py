@@ -20,6 +20,13 @@ from copulas.univariate import GaussianUnivariate
 import warnings
 warnings.filterwarnings("ignore")
 
+# Running this file will generate a csv file with the format
+# 'knockoffs{}_p{}_n{}_{:03d}.csv'
+# for every 'p' in ps,
+#      'n' in ns,
+#      'mi' in max_iter, 
+#      with an identifier 'ind'
+
 ps = [2,4,8,16,32,64,128]
 ns = [100,1000,10000,1000000,1000000]
 ind = '03'
@@ -228,6 +235,3 @@ for p in ps[1:3] :
             results = pd.DataFrame.from_dict(results)
             results.fillna('', inplace=True)
             results.to_csv('knockoffs{}_p{}_n{}_{:03d}.csv'.format(ind,round(math.log(p,2)),round(math.log(n,10)),mi))
-
-
-
