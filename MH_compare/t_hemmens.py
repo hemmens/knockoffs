@@ -15,6 +15,8 @@ from scipy.stats import t
 import t_core
 import knockoff_lib2 as ko
 
+# Running this file generates a pickle file in the format 'KOMC.pkl'
+
 #simulation parameters
 df_t = 5 # degree of freedom of t-distribution
 p = 30 # dimension of the random vector X
