@@ -159,5 +159,5 @@ for mi in max_iter :
     output[mi]['Candes'] = ko_cnd.copy()
     output[mi]['Hemmens'] = ko_hms.copy()
     
-    with open('KOMC_03.pkl', 'wb') as fp :
+    with open('KOMC.pkl', 'wb') as fp :
         pkl.dump(output, fp)
