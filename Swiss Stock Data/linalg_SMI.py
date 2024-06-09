@@ -14,6 +14,10 @@ from scipy.optimize import minimize, NonlinearConstraint, LinearConstraint
 
 import knockoff_lib2 as ko
 
+# Running this file generates a pickle file in the format
+# 'SMI_KO_{:03d}_{}.pkl'
+# using the max number of iterations from max_iter, as well as an identifier 'ind'
+
 max_iter = [5]#, 200]
 ind = '24_00'
 x0_type = 'candes_knockoff'
@@ -158,10 +162,3 @@ for mi in max_iter :
     
     with open('SMI_KO_{:03d}_{}.pkl'.format(mi, ind), 'wb') as fp :
         pkl.dump(output, fp)
-
-
-
-
-
-
-
