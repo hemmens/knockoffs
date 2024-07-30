@@ -27,9 +27,9 @@ warnings.filterwarnings("ignore")
 #      'mi' in max_iter, 
 #      with an identifier 'ind'
 
-ps = [2,4,8,16,32,64,128]
-ns = [100,1000,10000,1000000,1000000]
-ind = '03'
+ps = [2, 4, 8, 16, 32, 64, 128]
+ns = [100, 1000, 10000, 1000000, 1000000]
+ind = '00'
 max_iter = [3, 10, 20]
 
 x0_type = 'candes_knockoff'
