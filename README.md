@@ -19,3 +19,5 @@ Correspondence should be addressed to [Christopher Hemmens](mailto:chris@christo
 #### Reference
 
 Christopher Hemmens and Stephan Robert-Nicoud (2024). *Can linear algebra create perfect knockoffs?* Proceedings of the 7th International Conference on Big Data and Internet of Things
+
+Stephen Bates, Emmanuel Candès, Lucas Janson and Wenshuo Wang (2020). *Metropolized Knockoff Sampling*. Journal of the American Statistical Association [[pdf](http://lucasjanson.fas.harvard.edu/papers/Metropolized_Knockoff_Sampling-Bates_ea-2019.pdf)] [[arXiv](https://arxiv.org/abs/1903.00434)] [[journal](https://www.tandfonline.com/doi/full/10.1080/01621459.2020.1729163)]
