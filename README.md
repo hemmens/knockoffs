@@ -8,9 +8,9 @@ This is a collection of Python scripts designed to generate pseudo-perfect knock
 
 - a test using real-world data in the _Swiss Stock Data_ folder,
 
-- and a comparison with the Metropolized Sampling algorithm presented by Bates, Candès, Janson, and Wang (2020) in _MH_Compare_.
+- and a comparison with the Metropolized Sampling algorithm presented by Bates, Candès, Janson, and Wang (2020) in *MH_Compare*.
 
-MH_Compare/t_core.py is available to ensure t_hemmens.py runs correctly. The original file can be found [here](https://github.com/wenshuow/metro/blob/f2c0b5c2eaf64d8759ab651d5aff4a787bcd9ae3/heavy-tailed-t/t_core.py).
+MH_Compare/*t_core.py* is available to ensure *t_hemmens.py* runs correctly. The original file can be found [here](https://github.com/wenshuow/metro/blob/f2c0b5c2eaf64d8759ab651d5aff4a787bcd9ae3/heavy-tailed-t/t_core.py).
 
 All examples use the module _knockoff_lib2.py_.
 
