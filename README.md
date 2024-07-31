@@ -12,7 +12,7 @@ This is a collection of Python scripts designed to generate pseudo-perfect knock
 
 MH_Compare/t_core.py is available to ensure t_hemmens.py runs correctly. The original file can be found [here](https://github.com/wenshuow/metro/blob/f2c0b5c2eaf64d8759ab651d5aff4a787bcd9ae3/heavy-tailed-t/t_core.py).
 
-All examples use the module knockoff_lib2.py.
+All examples use the module _knockoff_lib2.py_.
 
 Correspondence should be addressed to [Christopher Hemmens](mailto:chris@christopherhemmens.com).
 
