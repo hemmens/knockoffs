@@ -4,11 +4,11 @@
 
 This is a collection of Python scripts designed to generate pseudo-perfect knockoffs using linear algebra. There are three main tests corresponding to different sections of our paper:
 
-- A simple test for matching complex co-moments in linalg3.py,
+- A simple test for matching complex co-moments in _linalg3.py_,
 
-- a test using real-world data in the Swiss Stock Data folder,
+- a test using real-world data in the _Swiss Stock Data_ folder,
 
-- and a comparison with the Metropolized Sampling algorithm presented by Bates, Candès, Janson, and Wang (2020) in MH_Compare.
+- and a comparison with the Metropolized Sampling algorithm presented by Bates, Candès, Janson, and Wang (2020) in _MH_Compare_.
 
 MH_Compare/t_core.py is available to ensure t_hemmens.py runs correctly. The original file can be found [here](https://github.com/wenshuow/metro/blob/f2c0b5c2eaf64d8759ab651d5aff4a787bcd9ae3/heavy-tailed-t/t_core.py).
 
